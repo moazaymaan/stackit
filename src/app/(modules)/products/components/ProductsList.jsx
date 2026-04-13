@@ -1,8 +1,9 @@
 ﻿"use client";
 
 // Purpose: This module handles products logic and UI.
-
-// hngarb aho
+// It fetches products data and renders a table of products.
+// It uses a custom hook to manage products state and actions.\
+// It also handles loading and error states for better user experience.
 import { useProducts } from "../hooks/useProducts";
 
 // Render the main products component.
