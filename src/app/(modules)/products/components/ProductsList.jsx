@@ -3,6 +3,8 @@
 // Purpose: This module handles products logic and UI.
  // It fetches products data and renders a table of products.
 
+  // It fetches products data and renders a table of products.
+
  console.log("ProductsList component loaded");
 
 import { useProducts } from "../hooks/useProducts";
