@@ -1,13 +1,6 @@
 ﻿"use client";
 
 // Purpose: This module handles products logic and UI.
-// Temporary test change
-// Temporary test chan
-// // Temporary test change
-// Temporary test change// Temporary test change
-// Temporary test change// Temporary test change
-// Temporary test changee
-
 
 import { useProducts } from "../hooks/useProducts";
 
