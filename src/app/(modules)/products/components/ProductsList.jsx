@@ -2,6 +2,9 @@
 
 // Purpose: This module handles products logic and UI.
 
+// Import the custom hook to manage products data and actions.
+
+
 import { useProducts } from "../hooks/useProducts";
 
 // Render the main products component.
