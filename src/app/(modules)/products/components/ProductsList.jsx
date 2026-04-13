@@ -1,7 +1,8 @@
 ﻿"use client";
 
 // Purpose: This module handles products logic and UI.
-
+// It defines a React component that displays a list of products in a table format.
+//q
 // Import the custom hook to manage products data and actions.
 
 
