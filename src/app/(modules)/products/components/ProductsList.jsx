@@ -2,6 +2,7 @@
 
 // Purpose: This module handles products logic and UI.
 
+console.log("ProductsList component loaded");
 import { useProducts } from "../hooks/useProducts";
 
 // Render the main products component.
