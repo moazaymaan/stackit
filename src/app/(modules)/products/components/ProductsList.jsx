@@ -2,6 +2,7 @@
 
 // Purpose: This module handles products logic and UI.
 
+// hngarb aho
 import { useProducts } from "../hooks/useProducts";
 
 // Render the main products component.
@@ -35,7 +36,7 @@ export default function ProductsList() {
               <td className="px-4 py-3">{product.name}</td>
               <td className="px-4 py-3">{product.category}</td>
               <td className="px-4 py-3">${product.unitPrice}</td>
-            </tr>
+            </tr>        
           ))}
         </tbody>
       </table>
