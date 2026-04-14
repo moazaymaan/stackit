@@ -186,7 +186,6 @@ export default function OrdersPage() {
                             className="inline-flex h-7 items-center justify-center gap-1 rounded-md bg-teal-500 px-2 text-[11px] font-semibold text-white transition hover:bg-teal-400"
                             title="Edit"
                           >
-                            <span aria-hidden="true">âœï¸</span>
                             Edit
                           </button>
                           <button
@@ -194,7 +193,7 @@ export default function OrdersPage() {
                             className="inline-flex h-7 items-center justify-center gap-1 rounded-md bg-red-500 px-2 text-[11px] font-semibold text-white transition hover:bg-red-400"
                             title="Delete"
                           >
-                            <span aria-hidden="true">ðŸ—‘ï¸</span>
+                        
                             Delete
                           </button>
                           <button
@@ -202,7 +201,7 @@ export default function OrdersPage() {
                             className="inline-flex h-7 items-center justify-center gap-1 rounded-md bg-blue-500 px-2 text-[11px] font-semibold text-white transition hover:bg-blue-400"
                             title="View"
                           >
-                            <span aria-hidden="true">ðŸ‘ï¸</span>
+                        
                             View
                           </button>
                         </div>

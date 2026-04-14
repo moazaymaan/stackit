@@ -149,7 +149,7 @@ export default function PurchasesPage() {
             <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#3f4d8a]/75 to-[#2d3f7a]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">ðŸ›’</span>
+            
                   <p className="text-sm font-semibold text-slate-200">Total Purchases This Month</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">
@@ -159,7 +159,7 @@ export default function PurchasesPage() {
 
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#8e5a2f]/75 to-[#3a3b62]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">â³</span>
+                
                   <p className="text-sm font-semibold text-slate-200">Pending Orders</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{pendingOrders}</p>
@@ -167,7 +167,7 @@ export default function PurchasesPage() {
 
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#3a7a5f]/75 to-[#2f4a6f]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">âœ…</span>
+      
                   <p className="text-sm font-semibold text-slate-200">Completed Orders</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{completedOrders}</p>
@@ -175,7 +175,7 @@ export default function PurchasesPage() {
 
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#6f7f32]/75 to-[#2f4a6f]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">ðŸ’²</span>
+                 
                   <p className="text-sm font-semibold text-slate-200">Total Spend</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{formatMoney(totalSpend)}</p>

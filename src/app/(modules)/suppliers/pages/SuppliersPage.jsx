@@ -3,7 +3,8 @@
 // Purpose: This module handles suppliers logic and UI.
 
 import { useMemo, useState } from "react";
-import { useSuppliers } from "../hooks/useSuppliers";
+import { useSuppliers } from "../hooks/useSuppliers"; 
+import { Edit2, Trash2, FileText } from "lucide-react";
 
 const supplierDisplayById = {
   "sup-001": {
@@ -155,7 +156,7 @@ export default function SuppliersPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 self-start md:self-auto">
+                           <div className="flex items-center gap-2 self-start md:self-auto">
                       <button
                         type="button"
                         onClick={(event) => event.stopPropagation()}
@@ -163,7 +164,7 @@ export default function SuppliersPage() {
                         title="Edit"
                         aria-label="Edit supplier"
                       >
-                        âœï¸
+                        <Edit2 className="h-4 w-4" />
                       </button>
                       {isExpanded ? (
                         <button
@@ -173,7 +174,7 @@ export default function SuppliersPage() {
                           title="Delete"
                           aria-label="Delete supplier"
                         >
-                          ðŸ—‘ï¸
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       ) : null}
                       <button
@@ -183,7 +184,7 @@ export default function SuppliersPage() {
                         title="View Purchases"
                         aria-label="View purchases"
                       >
-                        ðŸ“‹
+                        <FileText className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
