@@ -1,10 +1,7 @@
 ﻿"use client";
 
 // Purpose: This module handles authentication logic and UI.
-
-
-// This hook encapsulates all authentication-related state and logic, making it reusable across different components.
-// It manages form state, validation, submission, and error handling for the login process.
+console.log("useLogin hook loaded");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
