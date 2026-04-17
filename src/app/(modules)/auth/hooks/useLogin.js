@@ -2,6 +2,10 @@
 
 // Purpose: This module handles authentication logic and UI.
 
+
+// This hook encapsulates all authentication-related state and logic, making it reusable across different components.
+// It manages form state, validation, submission, and error handling for the login process.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "../services/authService";
