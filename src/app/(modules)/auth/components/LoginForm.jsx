@@ -3,6 +3,7 @@
 // Purpose: This module handles authentication logic and UI.
 
 import { useLogin } from "../hooks/useLogin";
+import { Mail, Lock, CheckSquare } from "lucide-react";
 
 // Render the main authentication component.
 export default function LoginForm() {
@@ -23,16 +24,19 @@ export default function LoginForm() {
 				>
 					Email
 				</label>
-				<input
-					id="email"
-					name="email"
-					type="email"
-					autoComplete="email"
-					value={form.email}
-					onChange={handleChange}
-					placeholder="you@example.com"
-					className="w-full rounded-xl border border-white/15 bg-slate-800/70 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 outline-none transition focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/30"
-				/>
+				<div className="relative">
+					<Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+					<input
+						id="email"
+						name="email"
+						type="email"
+						autoComplete="email"
+						value={form.email}
+						onChange={handleChange}
+						placeholder="you@example.com"
+						className="w-full rounded-xl border border-white/15 bg-slate-800/70 pl-10 pr-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 outline-none transition focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/30"
+					/>
+				</div>
 				{errors.email ? (
 					<p className="mt-1 text-xs text-rose-400">{errors.email}</p>
 				) : null}
@@ -45,29 +49,35 @@ export default function LoginForm() {
 				>
 					Password
 				</label>
-				<input
-					id="password"
-					name="password"
-					type="password"
-					autoComplete="current-password"
-					value={form.password}
-					onChange={handleChange}
-					placeholder="Enter your password"
-					className="w-full rounded-xl border border-white/15 bg-slate-800/70 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 outline-none transition focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/30"
-				/>
+				<div className="relative">
+					<Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+					<input
+						id="password"
+						name="password"
+						type="password"
+						autoComplete="current-password"
+						value={form.password}
+						onChange={handleChange}
+						placeholder="Enter your password"
+						className="w-full rounded-xl border border-white/15 bg-slate-800/70 pl-10 pr-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 outline-none transition focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/30"
+					/>
+				</div>
 				{errors.password ? (
 					<p className="mt-1 text-xs text-rose-400">{errors.password}</p>
 				) : null}
 			</div>
 
-			<label className="flex items-center gap-2 text-sm text-slate-300">
-				<input
-					name="remember"
-					type="checkbox"
-					checked={form.remember}
-					onChange={handleChange}
-					className="h-4 w-4 rounded border-slate-500 bg-slate-800 text-cyan-300 focus:ring-cyan-300"
-				/>
+			<label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+				<div className="relative">
+					<input
+						name="remember"
+						type="checkbox"
+						checked={form.remember}
+						onChange={handleChange}
+						className="h-4 w-4 appearance-none rounded border-slate-500 bg-slate-800 text-cyan-300 focus:ring-cyan-300 cursor-pointer accent-cyan-300"
+					/>
+					{form.remember && <CheckSquare className="absolute left-0 top-0 h-4 w-4 text-cyan-300 pointer-events-none" />}
+				</div>
 				Remember me
 			</label>
 

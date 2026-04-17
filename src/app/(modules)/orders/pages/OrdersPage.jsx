@@ -3,6 +3,7 @@
 // Purpose: This module handles orders logic and UI.
 
 import { useMemo, useState } from "react";
+import { CheckCheck, Pencil, Trash2, Eye } from "lucide-react";
 import { useOrders } from "../hooks/useOrders";
 import suppliersMock from "../../../../mock/suppliers";
 import productsMock from "../../../../mock/products";
@@ -147,8 +148,9 @@ export default function OrdersPage() {
 
               <button
                 type="button"
-                className="rounded-md bg-linear-to-r from-[#2d7dff] to-[#1e9bff] px-6 py-1.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(45,130,255,0.35)] transition hover:brightness-110"
+                className="inline-flex items-center gap-1.5 rounded-md bg-linear-to-r from-[#2d7dff] to-[#1e9bff] px-6 py-1.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(45,130,255,0.35)] transition hover:brightness-110"
               >
+                <CheckCheck className="h-4 w-4" strokeWidth={2.2} />
                 Apply
               </button>
             </div>
@@ -186,6 +188,7 @@ export default function OrdersPage() {
                             className="inline-flex h-7 items-center justify-center gap-1 rounded-md bg-teal-500 px-2 text-[11px] font-semibold text-white transition hover:bg-teal-400"
                             title="Edit"
                           >
+                            <Pencil className="h-3.5 w-3.5" />
                             Edit
                           </button>
                           <button
@@ -193,7 +196,7 @@ export default function OrdersPage() {
                             className="inline-flex h-7 items-center justify-center gap-1 rounded-md bg-red-500 px-2 text-[11px] font-semibold text-white transition hover:bg-red-400"
                             title="Delete"
                           >
-                        
+                            <Trash2 className="h-3.5 w-3.5" />
                             Delete
                           </button>
                           <button
@@ -201,7 +204,7 @@ export default function OrdersPage() {
                             className="inline-flex h-7 items-center justify-center gap-1 rounded-md bg-blue-500 px-2 text-[11px] font-semibold text-white transition hover:bg-blue-400"
                             title="View"
                           >
-                        
+                            <Eye className="h-3.5 w-3.5" />
                             View
                           </button>
                         </div>

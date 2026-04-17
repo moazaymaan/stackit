@@ -3,6 +3,16 @@
 // Purpose: This module handles purchases logic and UI.
 
 import { useMemo } from "react";
+import {
+  PlusCircle,
+  CircleDollarSign,
+  Clock3,
+  CheckCircle2,
+  BadgeDollarSign,
+  Pencil,
+  Trash2,
+  Eye,
+} from "lucide-react";
 import { usePurchases } from "../hooks/usePurchases";
 import ordersMock from "../../../../mock/orders";
 import suppliersMock from "../../../../mock/suppliers";
@@ -135,8 +145,9 @@ export default function PurchasesPage() {
         <div className="mb-5 flex justify-center">
           <button
             type="button"
-            className="inline-flex min-w-68 items-center justify-center rounded-md bg-linear-to-r from-[#2d6dff] to-[#1bd6d1] px-5 py-2.5 text-base font-bold text-white shadow-[0_10px_26px_rgba(38,146,255,0.36)] transition hover:brightness-110"
+            className="inline-flex min-w-68 items-center justify-center gap-2 rounded-md bg-linear-to-r from-[#2d6dff] to-[#1bd6d1] px-5 py-2.5 text-base font-bold text-white shadow-[0_10px_26px_rgba(38,146,255,0.36)] transition hover:brightness-110"
           >
+            <PlusCircle className="h-5 w-5" strokeWidth={2.2} />
             Create Purchase Order
           </button>
         </div>
@@ -149,7 +160,7 @@ export default function PurchasesPage() {
             <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#3f4d8a]/75 to-[#2d3f7a]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-            
+                  <CircleDollarSign className="h-4 w-4 text-cyan-200" />
                   <p className="text-sm font-semibold text-slate-200">Total Purchases This Month</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">
@@ -159,7 +170,7 @@ export default function PurchasesPage() {
 
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#8e5a2f]/75 to-[#3a3b62]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-                
+                  <Clock3 className="h-4 w-4 text-amber-200" />
                   <p className="text-sm font-semibold text-slate-200">Pending Orders</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{pendingOrders}</p>
@@ -167,7 +178,7 @@ export default function PurchasesPage() {
 
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#3a7a5f]/75 to-[#2f4a6f]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-      
+                  <CheckCircle2 className="h-4 w-4 text-emerald-200" />
                   <p className="text-sm font-semibold text-slate-200">Completed Orders</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{completedOrders}</p>
@@ -175,7 +186,7 @@ export default function PurchasesPage() {
 
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#6f7f32]/75 to-[#2f4a6f]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
-                 
+                  <BadgeDollarSign className="h-4 w-4 text-lime-200" />
                   <p className="text-sm font-semibold text-slate-200">Total Spend</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{formatMoney(totalSpend)}</p>
@@ -222,7 +233,7 @@ export default function PurchasesPage() {
                                     aria-label="Edit purchase order"
                                     title="Edit"
                                   >
-                                    âœï¸
+                                    <Pencil className="h-3.5 w-3.5" />
                                   </button>
                                   <button
                                     type="button"
@@ -230,7 +241,7 @@ export default function PurchasesPage() {
                                     aria-label="Delete purchase order"
                                     title="Delete"
                                   >
-                                    ðŸ—‘ï¸
+                                    <Trash2 className="h-3.5 w-3.5" />
                                   </button>
                                   <button
                                     type="button"
@@ -238,7 +249,7 @@ export default function PurchasesPage() {
                                     aria-label="View purchase order"
                                     title="View"
                                   >
-                                    ðŸ‘ï¸
+                                    <Eye className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
                               </div>

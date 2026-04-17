@@ -5,14 +5,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "../app/(modules)/auth/services/authService";
+import { Package, Boxes, Truck, ShoppingCart, ClipboardList, BarChart3, LogOut } from "lucide-react";
 
 const navItems = [
-  { label: "Products", href: "/products" },
-  { label: "Inventory", href: "/inventory" },
-  { label: "Suppliers", href: "/suppliers" },
-  { label: "Purchases", href: "/purchases" },
-  { label: "Orders", href: "/orders" },
-  { label: "Reports", href: "/reports" },
+  { label: "Products", href: "/products", icon: Package },
+  { label: "Inventory", href: "/inventory", icon: Boxes },
+  { label: "Suppliers", href: "/suppliers", icon: Truck },
+  { label: "Purchases", href: "/purchases", icon: ShoppingCart },
+  { label: "Orders", href: "/orders", icon: ClipboardList },
+  { label: "Reports", href: "/reports", icon: BarChart3 },
 ];
 
 // Process helper logic for navigation data and behavior.
@@ -81,17 +82,19 @@ export default function Navbar() {
           <ul className="mx-auto flex min-w-max items-center justify-center gap-1.5">
             {navItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const Icon = item.icon;
 
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`group relative inline-flex items-center px-3 py-2 text-sm font-medium transition duration-300 ${
+                    className={`group relative inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition duration-300 ${
                       isActive
                         ? "text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.55)]"
                         : "text-slate-300 hover:text-cyan-300 hover:drop-shadow-[0_0_10px_rgba(34,211,238,0.4)]"
                     }`}
                   >
+                    <Icon className="h-4 w-4" strokeWidth={2} />
                     {item.label}
                     <span
                       className={`absolute bottom-0 left-1/2 h-0.5 -translate-x-1/2 rounded-full bg-cyan-300 shadow-[0_0_14px_rgba(34,211,238,0.85)] transition-all duration-300 ${
@@ -109,8 +112,9 @@ export default function Navbar() {
           <button
             type="button"
             onClick={handleLogout}
-            className="inline-flex items-center rounded-xl bg-linear-to-r from-sky-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:from-sky-400 hover:to-cyan-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-linear-to-r from-sky-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:from-sky-400 hover:to-cyan-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
           >
+            <LogOut className="h-4 w-4" />
             Logout
           </button>
         </div>
