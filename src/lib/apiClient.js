@@ -4,7 +4,8 @@ import axios from "axios";
 import { clearAuthToken, getAuthToken } from "./authCookies";
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "",
+  baseURL:
+    process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "",
   timeout: 15000,
   headers: {
     "Content-Type": "application/json",
@@ -15,6 +16,7 @@ apiClient.interceptors.request.use((config) => {
   const token = getAuthToken();
 
   if (token) {
+    config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
   }
 

@@ -11,12 +11,28 @@ export default function LoginForm() {
 		form,
 		errors,
 		isSubmitting,
+		status,
+		message,
 		handleChange,
 		handleSubmit,
 	} = useLogin();
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-4" noValidate>
+			{message ? (
+				<div
+					role="status"
+					aria-live="polite"
+					className={`rounded-xl border px-4 py-3 text-sm ${
+						status === "error"
+							? "border-rose-400/30 bg-rose-500/10 text-rose-200"
+							: "border-cyan-300/30 bg-cyan-400/10 text-cyan-100"
+					}`}
+				>
+					{message}
+				</div>
+			) : null}
+
 			<div>
 				<label
 					htmlFor="email"
