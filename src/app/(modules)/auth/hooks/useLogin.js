@@ -1,9 +1,6 @@
 ﻿"use client";
 
 // Purpose: This module handles authentication logic and UI.
-console.log("useLogin hook loaded");
-console.log("useLogin hook loaded");
-console.log("useLogin hook loaded");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";

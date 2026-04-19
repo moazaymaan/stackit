@@ -3,7 +3,7 @@
 import apiClient from "../../../../lib/apiClient";
 import { clearAuthToken, setAuthToken } from "../../../../lib/authCookies";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 // Process helper logic for authentication data and behavior.
 function delay(ms) {
