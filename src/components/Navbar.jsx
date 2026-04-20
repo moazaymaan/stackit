@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "../app/(modules)/auth/services/authService";
-import { Package, Boxes, Truck, ShoppingCart, ClipboardList, BarChart3, LogOut } from "lucide-react";
+import { Package, Boxes, Truck, ShoppingCart, ClipboardList, Users, BarChart3, LogOut } from "lucide-react";
 
 const navItems = [
   { label: "Products", href: "/products", icon: Package },
@@ -13,6 +13,7 @@ const navItems = [
   { label: "Suppliers", href: "/suppliers", icon: Truck },
   { label: "Purchases", href: "/purchases", icon: ShoppingCart },
   { label: "Orders", href: "/orders", icon: ClipboardList },
+  { label: "Users", href: "/users", icon: Users },
   { label: "Reports", href: "/reports", icon: BarChart3 },
 ];
 

@@ -2,7 +2,7 @@
 
 // Purpose: This module handles inventory logic and UI.
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getInventory } from "../services/inventoryService";
 
 // Expose reusable inventory logic for other modules.
@@ -11,7 +11,7 @@ export function useInventory() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadInventory = async () => {
+  const loadInventory = useCallback(async () => {
     try {
       setIsLoading(true);
       setError("");
@@ -22,11 +22,11 @@ export function useInventory() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadInventory();
-  }, []);
+  }, [loadInventory]);
 
   return {
     inventory,
