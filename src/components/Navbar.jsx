@@ -2,10 +2,13 @@
 
 // Purpose: This module handles navigation logic and UI.
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { logout } from "../app/(modules)/auth/services/authService";
+import { getCurrentUser, logout } from "../app/(modules)/auth/services/authService";
 import { Package, Boxes, Truck, ShoppingCart, ClipboardList, Users, BarChart3, LogOut } from "lucide-react";
+import { getAuthToken } from "../lib/authCookies";
+import { isAdminRole } from "../lib/userRoles";
 
 const navItems = [
   { label: "Products", href: "/products", icon: Package },
@@ -56,6 +59,47 @@ function CubeLogo() {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [currentUserRole, setCurrentUserRole] = useState("");
+  const [roleChecked, setRoleChecked] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCurrentUser = async () => {
+      const token = getAuthToken();
+
+      if (!token) {
+        if (isMounted) {
+          setCurrentUserRole("");
+          setRoleChecked(true);
+        }
+        return;
+      }
+
+      try {
+        const response = await getCurrentUser();
+        const userRole = response?.user?.role || response?.data?.role || "";
+
+        if (isMounted) {
+          setCurrentUserRole(userRole);
+        }
+      } catch {
+        if (isMounted) {
+          setCurrentUserRole("");
+        }
+      } finally {
+        if (isMounted) {
+          setRoleChecked(true);
+        }
+      }
+    };
+
+    loadCurrentUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Handle local navigation events and state updates.
   const handleLogout = () => {
@@ -66,6 +110,18 @@ export default function Navbar() {
   if (pathname.startsWith("/auth")) {
     return null;
   }
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.label !== "Users") {
+      return true;
+    }
+
+    if (!roleChecked) {
+      return false;
+    }
+
+    return isAdminRole(currentUserRole);
+  });
 
   return (
     <header className="sticky top-0 z-50 border-b border-cyan-300/20 bg-linear-to-r from-slate-950 via-blue-950 to-slate-900/95 backdrop-blur">
@@ -81,7 +137,7 @@ export default function Navbar() {
 
         <nav className="flex-1 overflow-x-auto">
           <ul className="mx-auto flex min-w-max items-center justify-center gap-1.5">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
 

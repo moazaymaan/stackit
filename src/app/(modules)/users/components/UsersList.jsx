@@ -1,20 +1,9 @@
 "use client";
 
 import { Pencil, Trash2 } from "lucide-react";
+import { getUserRoleBadgeClass, getUserRoleLabel } from "../../../../lib/userRoles";
 
-function roleBadgeClass(role) {
-  switch (role) {
-    case "Admin":
-      return "bg-blue-500/20 text-blue-200 ring-1 ring-blue-400/40";
-    case "Manager":
-      return "bg-indigo-500/20 text-indigo-200 ring-1 ring-indigo-400/40";
-    case "User":
-    default:
-      return "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/40";
-  }
-}
-
-export default function UsersList({ users, loading, error, onEditRequest, onDelete }) {
+export default function UsersList({ users, loading, error, isSubmitting, onEditRequest, onDelete }) {
   if (loading) {
     return (
       <div className="rounded-xl border border-blue-800/45 bg-[#091b46]/60 px-4 py-6 text-sm text-slate-300">
@@ -52,11 +41,11 @@ export default function UsersList({ users, loading, error, onEditRequest, onDele
               <td className="px-5 py-4 text-slate-300">{user.email}</td>
               <td className="px-5 py-4">
                 <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${roleBadgeClass(
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${getUserRoleBadgeClass(
                     user.role,
                   )}`}
                 >
-                  {user.role}
+                  {getUserRoleLabel(user.role)}
                 </span>
               </td>
               <td className="px-5 py-4">
@@ -64,6 +53,7 @@ export default function UsersList({ users, loading, error, onEditRequest, onDele
                   <button
                     type="button"
                     onClick={() => onEditRequest(user)}
+                    disabled={isSubmitting}
                     className="inline-flex items-center gap-1.5 rounded-md bg-cyan-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-400"
                     title="Edit"
                   >
@@ -72,7 +62,8 @@ export default function UsersList({ users, loading, error, onEditRequest, onDele
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete(user.id)}
+                    onClick={() => onDelete(user)}
+                    disabled={isSubmitting}
                     className="inline-flex items-center gap-1.5 rounded-md bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-400"
                     title="Delete"
                   >

@@ -3,9 +3,24 @@
 import axios from "axios";
 import { clearAuthToken, getAuthToken } from "./authCookies";
 
+function normalizeBaseUrl(baseUrl) {
+  if (!baseUrl) {
+    return "";
+  }
+
+  const trimmedBaseUrl = baseUrl.replace(/\/+$/, "");
+
+  if (trimmedBaseUrl.endsWith("/api")) {
+    return trimmedBaseUrl;
+  }
+
+  return `${trimmedBaseUrl}/api`;
+}
+
 const apiClient = axios.create({
-  baseURL:
+  baseURL: normalizeBaseUrl(
     process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "",
+  ),
   timeout: 15000,
   headers: {
     "Content-Type": "application/json",
