@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Users, ShieldCheck, User, Warehouse, Calculator } from "lucide-react";
 import UsersList from "../components/UsersList";
 import { useUsers } from "../hooks/useUsers";
-import { USER_ROLE_OPTIONS, normalizeUserRole } from "../../../../lib/userRoles";
+import { getCurrentUser } from "../../auth/services/authService";
+import { getAuthToken } from "../../../../lib/authCookies";
+import { USER_ROLE_OPTIONS, isAdminRole, normalizeUserRole } from "../../../../lib/userRoles";
 
 export default function UsersPage() {
+	const router = useRouter();
 	const { users, loading, error, isSubmitting, createUser, updateUser, deleteUser } = useUsers();
+	const [isAccessChecked, setIsAccessChecked] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [formMode, setFormMode] = useState("create");
 	const [editingUser, setEditingUser] = useState(null);
@@ -16,6 +21,42 @@ export default function UsersPage() {
 	const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "USER" });
 	const [formError, setFormError] = useState("");
 	const [actionError, setActionError] = useState("");
+
+	useEffect(() => {
+		let isMounted = true;
+
+		const verifyAccess = async () => {
+			const token = getAuthToken();
+
+			if (!token) {
+				router.replace("/auth/pages/login");
+				return;
+			}
+
+			try {
+				const response = await getCurrentUser();
+				const currentRole = response?.user?.role || response?.data?.role || "";
+
+				if (!isAdminRole(currentRole)) {
+					router.replace("/products");
+					return;
+				}
+			} catch {
+				router.replace("/auth/pages/login");
+				return;
+			} finally {
+				if (isMounted) {
+					setIsAccessChecked(true);
+				}
+			}
+		};
+
+		verifyAccess();
+
+		return () => {
+			isMounted = false;
+		};
+	}, [router]);
 
 	const adminsCount = users.filter((entry) => normalizeUserRole(entry.role) === "ADMIN").length;
 	const accountantsCount = users.filter((entry) => normalizeUserRole(entry.role) === "ACCOUNTANT").length;
@@ -157,6 +198,16 @@ export default function UsersPage() {
 			setActionError(error.message || "Unable to delete user.");
 		}
 	};
+
+	if (!isAccessChecked) {
+		return (
+			<section className="flex min-h-[60vh] items-center justify-center p-4 sm:p-6 lg:p-8">
+				<div className="rounded-2xl border border-blue-800/45 bg-[#091b46]/60 px-5 py-4 text-sm text-slate-300">
+					Checking access...
+				</div>
+			</section>
+		);
+	}
 
 	return (
 		<section className="p-4 sm:p-6 lg:p-8">
