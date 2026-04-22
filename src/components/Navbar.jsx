@@ -66,6 +66,18 @@ export default function Navbar() {
     let isMounted = true;
 
     const loadCurrentUser = async () => {
+      if (isMounted) {
+        setRoleChecked(false);
+      }
+
+      if (pathname.startsWith("/auth")) {
+        if (isMounted) {
+          setCurrentUserRole("");
+          setRoleChecked(true);
+        }
+        return;
+      }
+
       const token = getAuthToken();
 
       if (!token) {
@@ -78,7 +90,7 @@ export default function Navbar() {
 
       try {
         const response = await getCurrentUser();
-        const userRole = response?.user?.role || response?.data?.role || "";
+        const userRole = response?.user?.role || response?.data?.user?.role || response?.data?.role || "";
 
         if (isMounted) {
           setCurrentUserRole(userRole);
@@ -99,7 +111,7 @@ export default function Navbar() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [pathname]);
 
   // Handle local navigation events and state updates.
   const handleLogout = () => {

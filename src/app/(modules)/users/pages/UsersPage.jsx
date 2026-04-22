@@ -35,19 +35,19 @@ export default function UsersPage() {
 
 			try {
 				const response = await getCurrentUser();
-				const currentRole = response?.user?.role || response?.data?.role || "";
+				const currentRole = response?.user?.role || response?.data?.user?.role || response?.data?.role || "";
 
 				if (!isAdminRole(currentRole)) {
 					router.replace("/products");
 					return;
 				}
-			} catch {
-				router.replace("/auth/pages/login");
-				return;
-			} finally {
+
 				if (isMounted) {
 					setIsAccessChecked(true);
 				}
+			} catch {
+				router.replace("/auth/pages/login");
+				return;
 			}
 		};
 
