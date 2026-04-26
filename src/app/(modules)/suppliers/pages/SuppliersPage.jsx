@@ -10,8 +10,6 @@ const EMPTY_SUPPLIER_FORM = {
   name: "",
   phone: "",
   address: "",
-  rating: "4",
-  leadTimeDays: "1",
 };
 
 const purchaseHistoryBySupplierId = {
@@ -156,8 +154,6 @@ export default function SuppliersPage() {
       name: supplier.name || "",
       phone: supplier.phone || "",
       address: supplier.address || "",
-      rating: String(supplier.rating ?? 0),
-      leadTimeDays: String(supplier.leadTimeDays ?? 0),
     });
     setModalType("edit");
   };
@@ -192,28 +188,6 @@ export default function SuppliersPage() {
       return false;
     }
 
-    if (Number.isNaN(Number(formValues.rating))) {
-      setFormError("Rating must be a valid number.");
-      return false;
-    }
-
-    const rating = Number(formValues.rating);
-    if (rating < 0 || rating > 5) {
-      setFormError("Rating must be between 0 and 5.");
-      return false;
-    }
-
-    if (Number.isNaN(Number(formValues.leadTimeDays))) {
-      setFormError("Lead time must be a valid number.");
-      return false;
-    }
-
-    const leadTimeDays = Number(formValues.leadTimeDays);
-    if (leadTimeDays < 1) {
-      setFormError("Lead time must be at least 1 day.");
-      return false;
-    }
-
     const digitsOnlyPhone = String(formValues.phone || "").replace(/\D/g, "");
     if (digitsOnlyPhone && digitsOnlyPhone.length < 9) {
       setFormError("Phone number is too short.");
@@ -237,9 +211,6 @@ export default function SuppliersPage() {
         name: formValues.name.trim(),
         phone: formValues.phone.trim(),
         address: formValues.address.trim(),
-        rating: Number(formValues.rating),
-        leadTimeDays: Number(formValues.leadTimeDays),
-        status: "Active",
       });
       closeModal();
     } catch (err) {
@@ -264,9 +235,6 @@ export default function SuppliersPage() {
         name: formValues.name.trim(),
         phone: formValues.phone.trim(),
         address: formValues.address.trim(),
-        rating: Number(formValues.rating),
-        leadTimeDays: Number(formValues.leadTimeDays),
-        status: selectedSupplier.status || "Active",
       });
       closeModal();
     } catch (err) {
@@ -487,37 +455,6 @@ export default function SuppliersPage() {
                   onChange={handleFormFieldChange}
                   className="w-full rounded-md border border-blue-600/50 bg-[#0b183d] px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400"
                 />
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="rating" className="mb-1 block text-sm font-medium text-slate-200">
-                    Rating
-                  </label>
-                  <input
-                    id="rating"
-                    name="rating"
-                    value={formValues.rating}
-                    onChange={handleFormFieldChange}
-                    className="w-full rounded-md border border-blue-600/50 bg-[#0b183d] px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="leadTimeDays"
-                    className="mb-1 block text-sm font-medium text-slate-200"
-                  >
-                    Lead Time (days)
-                  </label>
-                  <input
-                    id="leadTimeDays"
-                    name="leadTimeDays"
-                    value={formValues.leadTimeDays}
-                    onChange={handleFormFieldChange}
-                    className="w-full rounded-md border border-blue-600/50 bg-[#0b183d] px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400"
-                  />
-                </div>
               </div>
 
               {formError ? <p className="text-sm text-rose-300">{formError}</p> : null}

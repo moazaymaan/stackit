@@ -8,6 +8,16 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8002").re
 const SUPPLIERS_API_PATH = `${API_BASE}/api/suppliers`;
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
+function debugLog(payload) {
+  // #region agent log
+  fetch("/api/__debug_log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+  // #endregion
+}
+
 const READ_ROLES = ["ADMIN", "WAREHOUSE", "ACCOUNTANT"];
 const CREATE_UPDATE_ROLES = ["ADMIN", "ACCOUNTANT"];
 const DELETE_ROLES = ["ADMIN"];
@@ -191,12 +201,25 @@ function mapUiToBackend(payload) {
     ? `+20${normalizedPhone.slice(1)}`
     : normalizedPhone;
 
+  debugLog({
+    sessionId: "2765ac",
+    runId: "pre-fix",
+    hypothesisId: "H1",
+    location: "suppliersService.js:mapUiToBackend",
+    message: "Phone normalization",
+    data: {
+      startsWith01: normalizedPhone.startsWith("01"),
+      phoneLen: normalizedPhone.length,
+      outLen: phoneWithCountryCode.length,
+      outPrefix: phoneWithCountryCode.slice(0, 3),
+    },
+    timestamp: Date.now(),
+  });
+
   const normalized = {
     name: payload.name,
     phone: phoneWithCountryCode,
     address: payload.address,
-    location: payload.address,
-    status: payload.status || "Active",
   };
 
   const ratingValue = payload.rating;
@@ -207,10 +230,6 @@ function mapUiToBackend(payload) {
   const leadTimeValue = payload.lead_time_days ?? payload.leadTimeDays;
   if (leadTimeValue !== undefined && leadTimeValue !== null && leadTimeValue !== "") {
     normalized.lead_time_days = Number(leadTimeValue);
-  }
-
-  if (payload.status !== undefined && payload.status !== null && payload.status !== "") {
-    normalized.status = payload.status;
   }
 
   return Object.fromEntries(
@@ -355,6 +374,26 @@ export async function createSupplier(payload, role = getCurrentUserRoleFromToken
   try {
     const backendPayload = mapUiToBackend(payload);
 
+    debugLog({
+      sessionId: "2765ac",
+      runId: "pre-fix",
+      hypothesisId: "H2",
+      location: "suppliersService.js:createSupplier",
+      message: "About to POST supplier",
+      data: {
+        useMock: USE_MOCK,
+        apiBase: API_BASE,
+        endpoint: SUPPLIERS_API_PATH,
+        role: normalizeUserRole(role),
+        payloadKeys: Object.keys(backendPayload || {}),
+        hasName: !!backendPayload?.name,
+        hasAddress: !!backendPayload?.address,
+        hasLocation: !!backendPayload?.location,
+        phonePrefix: String(backendPayload?.phone || "").slice(0, 3),
+      },
+      timestamp: Date.now(),
+    });
+
     const response = await fetch(SUPPLIERS_API_PATH, {
       method: "POST",
       headers: {
@@ -364,10 +403,41 @@ export async function createSupplier(payload, role = getCurrentUserRoleFromToken
       body: JSON.stringify(backendPayload),
     });
 
+    debugLog({
+      sessionId: "2765ac",
+      runId: "pre-fix",
+      hypothesisId: "H3",
+      location: "suppliersService.js:createSupplier",
+      message: "POST response received",
+      data: {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
+        contentType: (response.headers.get("content-type") || "").slice(0, 60),
+      },
+      timestamp: Date.now(),
+    });
+
     const body = await parseResponse(response);
     const createdSupplier = extractSupplierEntity(body);
     return mapBackendToUi(createdSupplier);
   } catch (error) {
+    debugLog({
+      sessionId: "2765ac",
+      runId: "pre-fix",
+      hypothesisId: "H4",
+      location: "suppliersService.js:createSupplier",
+      message: "Create supplier failed",
+      data: {
+        status: error?.status || null,
+        message: String(error?.message || ""),
+        detailsKeys:
+          error?.details && typeof error.details === "object" ? Object.keys(error.details) : [],
+        detailsMessage: String(error?.details?.message || error?.details?.error?.message || ""),
+        detailsErrorsType: Array.isArray(error?.details?.errors) ? "array" : typeof error?.details?.errors,
+      },
+      timestamp: Date.now(),
+    });
     if (!shouldUseMockFallback(error?.status) && !shouldUseMockFallback(error)) {
       throw error;
     }
