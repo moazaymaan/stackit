@@ -1,73 +1,129 @@
 ﻿// Purpose: This module handles orders logic and UI.
 
-import ordersMock from "../../../../mock/orders";
+import apiClient from "../../../../lib/apiClient";
 
-let ordersStore = ordersMock.map((item) => ({
-  ...item,
-  items: item.items.map((orderItem) => ({ ...orderItem })),
-}));
+function normalizeErrorMessage(error, fallbackMessage) {
+  const responseData = error?.response?.data;
+  const responseMessage = responseData?.message || responseData?.error?.message;
+  return responseMessage || error?.message || fallbackMessage;
+}
 
-// Process helper logic for orders data and behavior.
-function delay(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+function extractOrderEntity(payload) {
+  const data = payload?.data ?? payload ?? {};
+  return data?.data ?? data?.order ?? data;
+}
+
+function extractOrderList(payload) {
+  const data = payload?.data ?? payload ?? {};
+  const candidate = data?.data ?? data?.orders ?? data;
+  return Array.isArray(candidate) ? candidate : [];
+}
+
+function normalizeOrderItem(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+  return {
+    productId: item.productId || item.product_id || "",
+    quantity: Number(item.quantity ?? 0),
+    price: Number(item.price ?? 0),
+  };
+}
+
+function normalizeOrder(order) {
+  if (!order || typeof order !== "object") {
+    return null;
+  }
+
+  const id = order.id || order._id || "";
+
+  return {
+    id,
+    _id: id,
+    customerName: order.customerName || order.customer_name || "",
+    items: Array.isArray(order.items) ? order.items.map(normalizeOrderItem).filter(Boolean) : [],
+    status: String(order.status || "").toUpperCase(),
+    totalAmount: Number(order.totalAmount ?? order.total_amount ?? 0),
+    createdAt: order.createdAt || order.created_at || "",
+    updatedAt: order.updatedAt || order.updated_at || "",
+  };
+}
+
+function normalizeMutationResponse(payload, fallbackMessage) {
+  const top = payload?.data ?? payload ?? {};
+  const entity = extractOrderEntity(payload);
+
+  return {
+    success: top?.success ?? true,
+    message: top?.message || fallbackMessage,
+    data: normalizeOrder(entity),
+  };
 }
 
 export async function getOrders() {
-  await delay(250);
-  return ordersStore.map((item) => ({
-    ...item,
-    items: item.items.map((orderItem) => ({ ...orderItem })),
-  }));
+  try {
+    const response = await apiClient.get("/orders");
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || "Unable to load orders.");
+    }
+
+    return extractOrderList(payload).map(normalizeOrder).filter(Boolean);
+  } catch (error) {
+    throw new Error(normalizeErrorMessage(error, "Unable to load orders."));
+  }
 }
 
 export async function getOrderById(orderId) {
-  await delay(150);
-  return ordersStore.find((item) => item.id === orderId) || null;
+  try {
+    const response = await apiClient.get(`/orders/${orderId}`);
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || "Unable to load the order.");
+    }
+
+    return normalizeOrder(extractOrderEntity(payload));
+  } catch (error) {
+    throw new Error(normalizeErrorMessage(error, "Unable to load the order."));
+  }
 }
 
 export async function createOrder(payload) {
-  await delay(200);
+  try {
+    const response = await apiClient.post("/orders", payload);
+    const normalized = normalizeMutationResponse(response.data, "Order created.");
 
-  const newOrder = {
-    id: `ord-${Date.now()}`,
-    createdAt: new Date().toISOString().split("T")[0],
-    items: [],
-    ...payload,
-  };
-
-  ordersStore = [newOrder, ...ordersStore];
-  return {
-    ...newOrder,
-    items: newOrder.items.map((item) => ({ ...item })),
-  };
-}
-
-export async function updateOrder(orderId, updates) {
-  await delay(200);
-
-  ordersStore = ordersStore.map((item) => {
-    if (item.id !== orderId) {
-      return item;
+    if (normalized.success === false) {
+      throw new Error(normalized.message || "Unable to create order.");
     }
 
-    return {
-      ...item,
-      ...updates,
-      items: updates.items ? updates.items.map((orderItem) => ({ ...orderItem })) : item.items,
-    };
-  });
-
-  return ordersStore.find((item) => item.id === orderId) || null;
+    return normalized;
+  } catch (error) {
+    throw new Error(normalizeErrorMessage(error, "Unable to create order."));
+  }
 }
 
-export async function deleteOrder(orderId) {
-  await delay(200);
+export async function confirmOrder(orderId) {
+  try {
+    const response = await apiClient.put(`/orders/${orderId}/confirm`);
+    const normalized = normalizeMutationResponse(response.data, "Order confirmed.");
 
-  const exists = ordersStore.some((item) => item.id === orderId);
-  ordersStore = ordersStore.filter((item) => item.id !== orderId);
+    if (normalized.success === false) {
+      throw new Error(normalized.message || "Unable to confirm order.");
+    }
 
-  return { success: exists };
+    return normalized;
+  } catch (error) {
+    // Preserve stock failure details when present.
+    const responseData = error?.response?.data;
+    const message = normalizeErrorMessage(error, "Unable to confirm order.");
+    const customError = new Error(message);
+    customError.status = error?.response?.status;
+    customError.details = responseData?.data || responseData?.details || responseData || null;
+    throw customError;
+  }
 }
 

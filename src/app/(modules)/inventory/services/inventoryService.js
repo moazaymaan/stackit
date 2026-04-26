@@ -1,58 +1,84 @@
 ﻿// Purpose: This module handles inventory logic and UI.
 
-import inventoryMock from "../../../../mock/inventory";
+import apiClient from "../../../../lib/apiClient";
 
-let inventoryStore = inventoryMock.map((item) => ({ ...item }));
-
-// Process helper logic for inventory data and behavior.
-function delay(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+function normalizeErrorMessage(error, fallbackMessage) {
+  return error?.response?.data?.message || error?.message || fallbackMessage;
 }
 
-export async function getInventory() {
-  await delay(250);
-  return inventoryStore.map((item) => ({ ...item }));
-}
+function normalizeInventoryLog(log) {
+  if (!log || typeof log !== "object") {
+    return null;
+  }
 
-export async function getInventoryByProductId(productId) {
-  await delay(150);
-  return inventoryStore.filter((item) => item.productId === productId);
-}
+  const id = log._id || log.id || "";
 
-export async function createInventoryItem(payload) {
-  await delay(200);
-
-  const newItem = {
-    id: `inv-${Date.now()}`,
-    ...payload,
+  return {
+    id,
+    _id: id,
+    productId: log.productId || "",
+    type: String(log.type || "").toUpperCase(),
+    quantity: Number(log.quantity ?? 0),
+    source: String(log.source || "").toUpperCase(),
+    referenceId: log.referenceId || log.reference_id || "",
+    createdAt: log.createdAt || log.created_at || "",
   };
-
-  inventoryStore = [newItem, ...inventoryStore];
-  return { ...newItem };
 }
 
-export async function updateInventoryItem(itemId, updates) {
-  await delay(200);
+function extractLogs(payload) {
+  const data = payload?.data ?? payload;
+  const list = data?.data ?? data;
+  return Array.isArray(list) ? list : [];
+}
 
-  inventoryStore = inventoryStore.map((item) => {
-    if (item.id !== itemId) {
-      return item;
+export async function getInventoryLogs() {
+  try {
+    const response = await apiClient.get("/inventory");
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || "Unable to load inventory logs.");
     }
 
-    return { ...item, ...updates };
-  });
-
-  return inventoryStore.find((item) => item.id === itemId) || null;
+    return extractLogs(payload).map(normalizeInventoryLog).filter(Boolean);
+  } catch (error) {
+    throw new Error(normalizeErrorMessage(error, "Unable to load inventory logs."));
+  }
 }
 
-export async function deleteInventoryItem(itemId) {
-  await delay(200);
+export async function getInventoryLogsByProductId(productId) {
+  try {
+    const response = await apiClient.get(`/inventory/${productId}`);
+    const payload = response.data;
 
-  const exists = inventoryStore.some((item) => item.id === itemId);
-  inventoryStore = inventoryStore.filter((item) => item.id !== itemId);
+    if (payload?.success === false) {
+      throw new Error(payload?.message || "Unable to load inventory logs.");
+    }
 
-  return { success: exists };
+    return extractLogs(payload).map(normalizeInventoryLog).filter(Boolean);
+  } catch (error) {
+    throw new Error(normalizeErrorMessage(error, "Unable to load inventory logs."));
+  }
+}
+
+export async function getCurrentStockByProductId(productId) {
+  try {
+    const response = await apiClient.get(`/inventory/stock/${productId}`);
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || "Unable to load product stock.");
+    }
+
+    const data = payload?.data ?? payload;
+    const stockValue = data?.data?.stock ?? data?.stock ?? 0;
+
+    return {
+      productId: data?.data?.productId ?? data?.productId ?? productId,
+      stock: Number(stockValue ?? 0),
+    };
+  } catch (error) {
+    throw new Error(normalizeErrorMessage(error, "Unable to load product stock."));
+  }
 }
 
