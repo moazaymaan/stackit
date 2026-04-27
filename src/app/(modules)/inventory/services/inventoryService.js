@@ -6,17 +6,19 @@ function normalizeErrorMessage(error, fallbackMessage) {
   return error?.response?.data?.message || error?.message || fallbackMessage;
 }
 
-function normalizeInventoryLog(log) {
+// Accepts a productsMap (id -> product object) to enrich log with productName
+function normalizeInventoryLog(log, productsMap = {}) {
   if (!log || typeof log !== "object") {
     return null;
   }
-
   const id = log._id || log.id || "";
-
+  const productId = log.productId || "";
+  const product = productsMap[productId] || null;
   return {
     id,
     _id: id,
-    productId: log.productId || "",
+    productId,
+    productName: product ? product.name : productId,
     type: String(log.type || "").toUpperCase(),
     quantity: Number(log.quantity ?? 0),
     source: String(log.source || "").toUpperCase(),
@@ -31,7 +33,16 @@ function extractLogs(payload) {
   return Array.isArray(list) ? list : [];
 }
 
+
 export async function getInventoryLogs() {
+  // Fetch products for mapping
+  const { getProducts } = await import("../../products/services/productsService");
+  let products = [];
+  try {
+    products = await getProducts();
+  } catch { products = []; }
+  const productsMap = Object.fromEntries(products.map(p => [p.id, p]));
+
   try {
     const response = await apiClient.get("/inventory");
     const payload = response.data;
@@ -40,11 +51,12 @@ export async function getInventoryLogs() {
       throw new Error(payload?.message || "Unable to load inventory logs.");
     }
 
-    return extractLogs(payload).map(normalizeInventoryLog).filter(Boolean);
+    return extractLogs(payload).map(l => normalizeInventoryLog(l, productsMap)).filter(Boolean);
   } catch (error) {
     throw new Error(normalizeErrorMessage(error, "Unable to load inventory logs."));
   }
 }
+
 
 export async function getInventoryLogsByProductId(productId) {
   try {

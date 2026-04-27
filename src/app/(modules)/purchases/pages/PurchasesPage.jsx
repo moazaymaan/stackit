@@ -548,7 +548,7 @@ export default function PurchasesPage() {
                             </div>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs font-medium text-slate-400">Supplier</span>
-                              <span className="text-xs font-semibold text-slate-200">{purchase.supplierId}</span>
+                              <span className="text-xs font-semibold text-slate-200">{purchase.supplierName}</span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-slate-400">{formatBoardDate(purchase.createdAt)}</span>

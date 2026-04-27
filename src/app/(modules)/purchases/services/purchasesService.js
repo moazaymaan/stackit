@@ -63,14 +63,18 @@ function normalizeErrorMessage(error, fallbackMessage = "An error occurred") {
 }
 
 // Helper: Normalize purchase entity from backend
-function normalizePurchase(purchase) {
+
+// Accepts a suppliersMap (id -> supplier object) to enrich purchase with supplierName
+function normalizePurchase(purchase, suppliersMap = {}) {
   if (!purchase || typeof purchase !== "object") {
     return null;
   }
-
+  const supplierId = purchase.supplierId || "";
+  const supplier = suppliersMap[supplierId] || null;
   return {
     id: purchase._id || purchase.id || "",
-    supplierId: purchase.supplierId || "",
+    supplierId,
+    supplierName: supplier ? supplier.name : supplierId,
     items: Array.isArray(purchase.items) ? purchase.items : [],
     status: String(purchase.status || "PENDING"),
     totalAmount: Number(purchase.totalAmount ?? 0),
@@ -109,18 +113,28 @@ function extractPurchaseEntity(response) {
   return data;
 }
 
+
 export async function getPurchases(role = getCurrentUserRoleFromToken()) {
   assertAllowedRole(role, READ_ROLES);
+
+  // Fetch suppliers for mapping
+  const { getSuppliers } = await import("../../suppliers/services/suppliersService");
+  let suppliers = [];
+  try {
+    suppliers = await getSuppliers(role);
+  } catch { suppliers = []; }
+  const suppliersMap = Object.fromEntries(suppliers.map(s => [s.id, s]));
 
   try {
     const response = await apiClient.get("/purchases");
     const purchases = extractPurchaseList(response.data);
-    return purchases.map(normalizePurchase).filter(Boolean);
+    return purchases.map(p => normalizePurchase(p, suppliersMap)).filter(Boolean);
   } catch (error) {
     const message = normalizeErrorMessage(error, "Failed to load purchases.");
     throw new Error(message);
   }
 }
+
 
 export async function getPurchaseById(purchaseId, role = getCurrentUserRoleFromToken()) {
   assertAllowedRole(role, READ_ROLES);
