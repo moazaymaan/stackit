@@ -31,6 +31,86 @@ function normalizeOrderItem(item) {
   };
 }
 
+function normalizeEntityId(value) {
+  if (!value || typeof value !== "object") {
+    return String(value || "").trim();
+  }
+
+  return String(value.id || value._id || value.uuid || "").trim();
+}
+
+function resolveCustomerName(customer) {
+  if (!customer || typeof customer !== "object") {
+    return "";
+  }
+
+  return String(
+    customer.name ||
+      customer.customerName ||
+      customer.email ||
+      customer.username ||
+      customer.displayName ||
+      "",
+  ).trim();
+}
+
+function resolveProductName(product) {
+  if (!product || typeof product !== "object") {
+    return "";
+  }
+
+  return String(product.name || product.title || product.productName || "").trim();
+}
+
+function buildProductsMap(products = []) {
+  return products.reduce((accumulator, product) => {
+    if (!product || typeof product !== "object") {
+      return accumulator;
+    }
+
+    const keys = [product.id, product._id, product.uuid].map(normalizeEntityId).filter(Boolean);
+
+    for (const key of keys) {
+      accumulator[key] = product;
+    }
+
+    return accumulator;
+  }, {});
+}
+
+function enrichOrderItems(items = [], productsMap = {}) {
+  return (items || []).map((item) => {
+    if (!item || typeof item !== "object") {
+      return item;
+    }
+
+    const productId = String(item.productId || "").trim();
+    const product = productsMap[productId] || null;
+    const productName = resolveProductName(product) || "Product";
+
+    return {
+      ...item,
+      productName,
+    };
+  });
+}
+
+function buildCustomersMap(customers = []) {
+  return customers.reduce((accumulator, customer) => {
+    if (!customer || typeof customer !== "object") {
+      return accumulator;
+    }
+
+    const keys = [customer.id, customer._id, customer.uuid].map(normalizeEntityId).filter(Boolean);
+
+    for (const key of keys) {
+      accumulator[key] = customer;
+    }
+
+    return accumulator;
+  }, {});
+}
+
 function normalizeOrder(order) {
   if (!order || typeof order !== "object") {
     return null;
@@ -43,6 +123,38 @@ function normalizeOrder(order) {
     _id: id,
     customerName: order.customerName || order.customer_name || "",
     items: Array.isArray(order.items) ? order.items.map(normalizeOrderItem).filter(Boolean) : [],
+    status: String(order.status || "").toUpperCase(),
+    totalAmount: Number(order.totalAmount ?? order.total_amount ?? 0),
+    createdAt: order.createdAt || order.created_at || "",
+    updatedAt: order.updatedAt || order.updated_at || "",
+  };
+}
+
+// Accepts customersMap and productsMap (id -> entity object) to enrich order with customerName and product names.
+function normalizeOrderWithCustomers(order, customersMap = {}, productsMap = {}) {
+  if (!order || typeof order !== "object") {
+    return null;
+  }
+
+  const customerReference = order.customer || order.customerId || order.customerInfo || null;
+  const customerId = normalizeEntityId(customerReference);
+  const customer =
+    customersMap[customerId] ||
+    customersMap[normalizeEntityId(order.customerId)] ||
+    (customerReference && typeof customerReference === "object" ? customerReference : null);
+  const customerName =
+    resolveCustomerName(customer) ||
+    resolveCustomerName(order.customer) ||
+    String(order.customerName || order.customer_name || "Customer").trim() ||
+    "Customer";
+  const id = order.id || order._id || "";
+
+  return {
+    id,
+    _id: id,
+    customerId,
+    customerName,
+    items: enrichOrderItems(order.items || [], productsMap),
     status: String(order.status || "").toUpperCase(),
     totalAmount: Number(order.totalAmount ?? order.total_amount ?? 0),
     createdAt: order.createdAt || order.created_at || "",
@@ -70,7 +182,27 @@ export async function getOrders() {
       throw new Error(payload?.message || "Unable to load orders.");
     }
 
-    return extractOrderList(payload).map(normalizeOrder).filter(Boolean);
+    // Fetch customers and products for mapping
+    const { getUsers } = await import("../../users/services/userService");
+    const { getProducts } = await import("../../products/services/productsService");
+    let customers = [];
+    let products = [];
+    try {
+      customers = await getUsers().catch(() => []);
+    } catch {
+      customers = [];
+    }
+    try {
+      products = await getProducts().catch(() => []);
+    } catch {
+      products = [];
+    }
+    const customersMap = buildCustomersMap(customers);
+    const productsMap = buildProductsMap(products);
+
+    return extractOrderList(payload)
+      .map((o) => normalizeOrderWithCustomers(o, customersMap, productsMap))
+      .filter(Boolean);
   } catch (error) {
     throw new Error(normalizeErrorMessage(error, "Unable to load orders."));
   }
@@ -85,7 +217,25 @@ export async function getOrderById(orderId) {
       throw new Error(payload?.message || "Unable to load the order.");
     }
 
-    return normalizeOrder(extractOrderEntity(payload));
+    // Fetch customers and products for mapping
+    const { getUsers } = await import("../../users/services/userService");
+    const { getProducts } = await import("../../products/services/productsService");
+    let customers = [];
+    let products = [];
+    try {
+      customers = await getUsers().catch(() => []);
+    } catch {
+      customers = [];
+    }
+    try {
+      products = await getProducts().catch(() => []);
+    } catch {
+      products = [];
+    }
+    const customersMap = buildCustomersMap(customers);
+    const productsMap = buildProductsMap(products);
+
+    return normalizeOrderWithCustomers(extractOrderEntity(payload), customersMap, productsMap);
   } catch (error) {
     throw new Error(normalizeErrorMessage(error, "Unable to load the order."));
   }
@@ -100,7 +250,29 @@ export async function createOrder(payload) {
       throw new Error(normalized.message || "Unable to create order.");
     }
 
-    return normalized;
+    // Fetch customers and products for mapping to enrich response
+    const { getUsers } = await import("../../users/services/userService");
+    const { getProducts } = await import("../../products/services/productsService");
+    let customers = [];
+    let products = [];
+    try {
+      customers = await getUsers().catch(() => []);
+    } catch {
+      customers = [];
+    }
+    try {
+      products = await getProducts().catch(() => []);
+    } catch {
+      products = [];
+    }
+    const customersMap = buildCustomersMap(customers);
+    const productsMap = buildProductsMap(products);
+    const enrichedOrder = normalizeOrderWithCustomers(normalized.data, customersMap, productsMap);
+
+    return {
+      ...normalized,
+      data: enrichedOrder,
+    };
   } catch (error) {
     throw new Error(normalizeErrorMessage(error, "Unable to create order."));
   }
@@ -115,7 +287,29 @@ export async function confirmOrder(orderId) {
       throw new Error(normalized.message || "Unable to confirm order.");
     }
 
-    return normalized;
+    // Fetch customers and products for mapping to enrich response
+    const { getUsers } = await import("../../users/services/userService");
+    const { getProducts } = await import("../../products/services/productsService");
+    let customers = [];
+    let products = [];
+    try {
+      customers = await getUsers().catch(() => []);
+    } catch {
+      customers = [];
+    }
+    try {
+      products = await getProducts().catch(() => []);
+    } catch {
+      products = [];
+    }
+    const customersMap = buildCustomersMap(customers);
+    const productsMap = buildProductsMap(products);
+    const enrichedOrder = normalizeOrderWithCustomers(normalized.data, customersMap, productsMap);
+
+    return {
+      ...normalized,
+      data: enrichedOrder,
+    };
   } catch (error) {
     // Preserve stock failure details when present.
     const responseData = error?.response?.data;

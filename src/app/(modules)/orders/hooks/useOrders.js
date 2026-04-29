@@ -6,12 +6,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { normalizeUserRole } from "../../../../lib/userRoles";
 import { getCurrentUserRoleFromToken } from "../../suppliers/services/suppliersService";
 import { confirmOrder, createOrder, getOrderById, getOrders } from "../services/ordersService";
+import { getUsers } from "../../users/services/userService";
 
 const CONFIRM_ROLES = ["ADMIN", "ACCOUNTANT"];
 
 // Expose reusable orders logic for other modules.
 export function useOrders() {
   const [orders, setOrders] = useState([]);
+    const [customers, setCustomers] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentUserRole, setCurrentUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -29,8 +31,12 @@ export function useOrders() {
       setError("");
       setErrorDetails(null);
       setSuccessMessage("");
-      const data = await getOrders();
-      setOrders(data);
+      const [ordersData, customersData] = await Promise.all([
+        getOrders(),
+        getUsers().catch(() => []),
+      ]);
+      setOrders(ordersData);
+      setCustomers(customersData);
     } catch (err) {
       setError(err.message || "Failed to load orders.");
     } finally {
@@ -126,6 +132,7 @@ export function useOrders() {
 
   return {
     orders,
+      customers,
     ordersById,
     selectedOrder,
     setSelectedOrder,

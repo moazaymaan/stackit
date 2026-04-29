@@ -56,7 +56,7 @@ function formatBoardDate(value) {
 }
 
 // Inline Create Purchase Modal Component
-function CreatePurchaseModal({ isOpen, onClose, onSubmit, isSubmitting }) {
+function CreatePurchaseModal({ isOpen, onClose, onSubmit, isSubmitting, suppliers = [], products = [] }) {
   const [formData, setFormData] = useState({
     supplierId: "",
     items: [{ productId: "", quantity: "", price: "" }],
@@ -89,13 +89,13 @@ function CreatePurchaseModal({ isOpen, onClose, onSubmit, isSubmitting }) {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.supplierId.trim()) {
-      newErrors.supplierId = "Supplier ID is required";
+      newErrors.supplierId = "Supplier is required";
     }
     if (formData.items.length === 0) {
       newErrors.items = "At least one item is required";
     }
     formData.items.forEach((item, i) => {
-      if (!item.productId.trim()) newErrors[`item_${i}_productId`] = "Product ID required";
+      if (!item.productId.trim()) newErrors[`item_${i}_productId`] = "Product is required";
       if (!item.quantity || Number(item.quantity) <= 0)
         newErrors[`item_${i}_quantity`] = "Quantity must be > 0";
       if (!item.price || Number(item.price) <= 0)
@@ -150,16 +150,21 @@ function CreatePurchaseModal({ isOpen, onClose, onSubmit, isSubmitting }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-200">Supplier ID</label>
-            <input
-              type="text"
+            <label className="block text-sm font-medium text-slate-200">Supplier</label>
+            <select
               value={formData.supplierId}
               onChange={(e) =>
                 setFormData({ ...formData, supplierId: e.target.value })
               }
-              className="mt-1 w-full border border-blue-600/40 rounded-md bg-[#0f1e3f] px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="Enter supplier ID"
-            />
+              className="mt-1 w-full border border-blue-600/40 rounded-md bg-[#0f1e3f] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            >
+              <option value="">-- Select a Supplier --</option>
+              {suppliers.map((supplier) => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name} ({supplier.id})
+                </option>
+              ))}
+            </select>
             {errors.supplierId && (
               <p className="text-xs text-rose-400 mt-1">{errors.supplierId}</p>
             )}
@@ -184,15 +189,20 @@ function CreatePurchaseModal({ isOpen, onClose, onSubmit, isSubmitting }) {
             <div className="space-y-2">
               {formData.items.map((item, index) => (
                 <div key={index} className="flex gap-2 items-start">
-                  <input
-                    type="text"
+                  <select
                     value={item.productId}
                     onChange={(e) =>
                       handleItemChange(index, "productId", e.target.value)
                     }
-                    className="flex-1 border border-blue-600/40 rounded-md bg-[#0f1e3f] px-2 py-1 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
-                    placeholder="Product ID"
-                  />
+                    className="flex-1 border border-blue-600/40 rounded-md bg-[#0f1e3f] px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  >
+                    <option value="">-- Select Product --</option>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name || product.title} ({product.sku || product.code || product.id})
+                      </option>
+                    ))}
+                  </select>
                   <input
                     type="number"
                     value={item.quantity}
@@ -280,7 +290,7 @@ function StatusUpdateModal({ isOpen, onClose, onSubmit, isSubmitting, purchase }
 
         <div className="mb-4 p-3 rounded-md bg-blue-700/20 border border-blue-600/40">
           <p className="text-sm text-slate-300">
-            <span className="font-semibold text-slate-200">Purchase:</span> {purchase.id}
+            <span className="font-semibold text-slate-200">Purchase:</span> {purchase.supplierName || purchase.supplier?.name || "Purchase"}
           </p>
           <p className="text-sm text-slate-300 mt-1">
             <span className="font-semibold text-slate-200">Current Status:</span>{" "}
@@ -336,6 +346,8 @@ export default function PurchasesPage() {
   // Read purchases data and actions from a custom hook.
   const {
     purchases,
+    suppliers,
+    products,
     isLoading,
     isSubmitting,
     error,
@@ -510,7 +522,7 @@ export default function PurchasesPage() {
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#3a7a5f]/75 to-[#2f4a6f]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-200" />
-                  <p className="text-sm font-semibold text-slate-200">Delivered Orders</p>
+                  <p className="text-sm font-semibold text-slate-200">Received Orders</p>
                 </div>
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{deliveredOrders}</p>
               </article>
@@ -540,15 +552,20 @@ export default function PurchasesPage() {
                         {boardData[column].map((purchase) => (
                           <article
                             key={purchase.id}
-                            className="rounded-xl border border-blue-700/40 bg-gradient-to-b from-[#1c2c4d]/90 to-[#0e1a2f]/90 px-5 py-4 shadow-lg hover:shadow-xl transition-all duration-200"
+                            className="rounded-xl border border-blue-700/40 bg-linear-to-b
+                             from-[#1c2c4d]/90 to-[#0e1a2f]/90 px-5 py-4 shadow-lg hover:shadow-xl transition-all duration-200"
                           >
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-base font-bold text-cyan-300 break-all">{purchase.id}</span>
+                              <span className="text-base font-bold text-cyan-300 break-all">
+                                {purchase.supplierName || purchase.supplier?.name || "Purchase"}
+                              </span>
                               <span className="text-2xl font-extrabold text-white">{formatMoney(purchase.totalAmount)}</span>
                             </div>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs font-medium text-slate-400">Supplier</span>
-                              <span className="text-xs font-semibold text-slate-200">{purchase.supplierName}</span>
+                              <span className="text-xs font-semibold text-slate-200">
+                                {purchase.supplierName || purchase.supplier?.name || "Unknown supplier"}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-slate-400">{formatBoardDate(purchase.createdAt)}</span>
@@ -586,6 +603,8 @@ export default function PurchasesPage() {
         onClose={() => setIsCreateOpen(false)}
         onSubmit={handleCreateSubmit}
         isSubmitting={isSubmitting}
+        suppliers={suppliers}
+        products={products}
       />
 
       <StatusUpdateModal

@@ -5,6 +5,51 @@
 import { usePurchases } from "../hooks/usePurchases";
 import { ShoppingCart, Edit2, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
+// Format currency amounts
+function formatMoney(value) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+}
+
+// Format dates in readable format
+function formatDate(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+// Normalize status to readable label
+function normalizeDisplayStatus(backendStatus) {
+  const statusMap = {
+    PENDING: "Pending",
+    RECEIVED: "Received",
+    IN_TRANSIT: "In Transit",
+    DELIVERED: "Delivered",
+  };
+  const value = String(backendStatus || "PENDING").toUpperCase();
+  return statusMap[value] || "Pending";
+}
+
+const getStatusIcon = (status) => {
+  const normalizedStatus = normalizeDisplayStatus(status);
+  switch (normalizedStatus) {
+    case "Delivered":
+      return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+    case "Pending":
+      return <Clock className="h-4 w-4 text-yellow-600" />;
+    default:
+      return <AlertCircle className="h-4 w-4 text-orange-600" />;
+  }
+};
+
 // Render the main purchases component.
 export default function PurchasesList() {
   // Read purchases data and actions from a custom hook.
@@ -17,17 +62,6 @@ export default function PurchasesList() {
   if (error) {
     return <p className="text-sm text-red-600">{error}</p>;
   }
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'Pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      default:
-        return <AlertCircle className="h-4 w-4 text-orange-600" />;
-    }
-  };
 
   return (
     <div className="space-y-3">
@@ -42,11 +76,12 @@ export default function PurchasesList() {
                 <ShoppingCart className="h-5 w-5" />
               </div>
               <div className="flex-1">
-                <p className="font-medium">{purchase.reference}</p>
+                <p className="font-medium">{purchase.supplierName || "Supplier"}</p>
                 <p className="text-sm text-slate-600 mt-1">Status: 
-                  <span className="inline-flex items-center gap-1 ml-2 font-medium">{getStatusIcon(purchase.status)} {purchase.status}</span>
+                  <span className="inline-flex items-center gap-1 ml-2 font-medium">{getStatusIcon(purchase.status)} {normalizeDisplayStatus(purchase.status)}</span>
                 </p>
-                <p className="text-sm text-slate-600 mt-1">Amount: <span className="font-semibold text-slate-900">${purchase.amount}</span></p>
+                <p className="text-sm text-slate-600 mt-1">Amount: <span className="font-semibold text-slate-900">{formatMoney(purchase.totalAmount)}</span></p>
+                <p className="text-xs text-slate-500 mt-1">{formatDate(purchase.createdAt)}</p>
               </div>
             </div>
             <div className="flex gap-1">
@@ -63,4 +98,3 @@ export default function PurchasesList() {
     </div>
   );
 }
-

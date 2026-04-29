@@ -291,14 +291,14 @@ export default function OrdersPage() {
                     <article key={order.id} className="flex h-full w-full flex-col rounded-lg border border-blue-700/40 bg-linear-to-b from-[#1a3668]/85 to-[#0f1f4f]/80 p-4.5 shadow-[0_12px_28px_rgba(0,0,0,0.4)]">
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-[1.65rem] font-extrabold leading-none text-sky-300">
-                          {order.id ? `ORD-${String(order.id).slice(-6)}` : "Order"}
+                          {order.customerName || "Order"}
                         </p>
                         <span className={`inline-flex rounded-md px-2.5 py-1 text-xs font-bold ${getStatusBadgeStyle(order.normalizedStatus)}`}>
                           {order.normalizedStatus}
                         </span>
                       </div>
 
-                      <p className="mt-2 text-lg font-bold text-slate-100">{order.customerName || "—"}</p>
+                      <p className="mt-2 text-lg font-bold text-slate-100">{order.id ? `ORD-${String(order.id).slice(-6)}` : "—"}</p>
 
                       <div className="mt-2.5 min-h-16 rounded-md bg-[#0c1d4a]/65 px-3 py-2 text-sm text-slate-200">
                         {order.productNames.slice(0, 2).map((name, i) => (
@@ -586,13 +586,12 @@ export default function OrdersPage() {
                 </thead>
                 <tbody>
                   {(selectedOrder.items || []).map((item, idx) => {
-                    const product = productById.get(String(item.productId)) || null;
                     const lineTotal = (Number(item.quantity) || 0) * (Number(item.price) || 0);
                     return (
                       <tr key={idx} className="border-t border-blue-800/35 bg-[#0a1640]/40">
                         <td className="px-4 py-3">
                           <div className="font-semibold text-slate-100">
-                            {product?.name || product?.title || item.productId}
+                            {item.productName || "Product"}
                           </div>
                           <div className="text-xs text-slate-400">{item.productId}</div>
                         </td>

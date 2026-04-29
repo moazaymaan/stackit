@@ -12,6 +12,8 @@ import {
   getCurrentUserRoleFromToken,
 } from "../services/purchasesService";
 import { normalizeUserRole } from "../../../../lib/userRoles";
+import { getSuppliers } from "../../suppliers/services/suppliersService";
+import { getProducts } from "../../products/services/productsService";
 
 const READ_ROLES = ["ADMIN", "ACCOUNTANT", "WAREHOUSE"];
 const CREATE_UPDATE_ROLES = ["ADMIN", "ACCOUNTANT"];
@@ -19,6 +21,8 @@ const CREATE_UPDATE_ROLES = ["ADMIN", "ACCOUNTANT"];
 // Expose reusable purchases logic for other modules.
 export function usePurchases() {
   const [purchases, setPurchases] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -39,8 +43,14 @@ export function usePurchases() {
     try {
       setIsLoading(true);
       setError("");
-      const data = await getPurchases(normalizedRole);
-      setPurchases(data);
+      const [purchasesData, suppliersData, productsData] = await Promise.all([
+        getPurchases(normalizedRole),
+        getSuppliers(normalizedRole).catch(() => []),
+        getProducts().catch(() => []),
+      ]);
+      setPurchases(purchasesData);
+      setSuppliers(suppliersData);
+      setProducts(productsData);
     } catch (err) {
       setError(err.message || "Failed to load purchases.");
     } finally {
@@ -152,6 +162,8 @@ export function usePurchases() {
 
   return {
     purchases,
+    suppliers,
+    products,
     isLoading,
     isSubmitting,
     error,
