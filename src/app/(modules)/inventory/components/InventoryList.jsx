@@ -6,6 +6,20 @@ import { useMemo, useState } from "react";
 import { useInventory } from "../hooks/useInventory";
 import { Boxes, CalendarClock, RefreshCw, Search, Tag } from "lucide-react";
 
+function formatMovementSource(source) {
+  const normalized = String(source || "").toUpperCase();
+
+  if (normalized === "PURCHASE") {
+    return "Purchase";
+  }
+
+  if (normalized === "ORDER") {
+    return "Order";
+  }
+
+  return normalized ? normalized.charAt(0) + normalized.slice(1).toLowerCase() : "—";
+}
+
 // Render the main inventory component.
 export default function InventoryList() {
   // Read inventory data and actions from a custom hook.
@@ -296,12 +310,8 @@ export default function InventoryList() {
                     </p>
                     <p className="flex items-center gap-2">
                       <Tag className="h-4 w-4 text-slate-400" />
-                      <span>
-                        {item.lastSource ? item.lastSource : "—"}
-                        {item.lastReferenceId ? ` • ${item.lastReferenceId}` : ""}
-                      </span>
+                      <span>{formatMovementSource(item.lastSource)}</span>
                     </p>
-                    <p className="text-[11px] text-slate-500">Product ID: {item.productId}</p>
                   </div>
                 </article>
               ))}
@@ -349,7 +359,7 @@ export default function InventoryList() {
                       </td>
                       <td className="px-4 py-3 font-bold">{log.quantity}</td>
                       <td className="px-4 py-3">{log.source || "—"}</td>
-                      <td className="px-4 py-3">{log.referenceId || "—"}</td>
+                      <td className="px-4 py-3">{formatMovementSource(log.source)}</td>
                       <td className="px-4 py-3">
                         {log.createdAt ? new Date(log.createdAt).toLocaleString() : "—"}
                       </td>
