@@ -3,55 +3,57 @@
 import apiClient from "../../../../lib/apiClient";
 import { clearAuthToken, setAuthToken } from "../../../../lib/authCookies";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || "";
-
-// Process helper logic for authentication data and behavior.
-function delay(ms) {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms);
-	});
-}
-
-async function mockLogin({ email }) {
-	await delay(700);
-	const token = "mock-token";
-
-	setAuthToken(token);
+function normalizeAuthPayload(payload) {
+	const data = payload?.data || payload || {};
+	const authData = data?.data || {};
+	const token = authData.token || data.token || "";
+	const user = authData.user || data.user || null;
 
 	return {
-		user: {
-			id: "mock-user-1",
-			email,
-			name: "Frontend User",
-		},
+		success: data.success ?? Boolean(token),
+		message: data.message || "Logged in successfully.",
 		token,
-		message: "Frontend mock login success. Backend can be connected anytime.",
+		user,
+		data: authData.token || authData.user ? authData : { token, user },
 	};
 }
 
 export async function login(payload) {
-	// If backend URL is not configured yet, keep frontend flow unblocked.
-	if (!API_BASE_URL) {
-		return mockLogin(payload);
-	}
-
-	let data = null;
-
 	try {
-		const response = await apiClient.post(`${API_BASE_URL}/auth/login`, payload);
-		data = response.data;
+		const response = await apiClient.post("/auth/login", {
+			email: payload.email,
+			password: payload.password,
+		});
+
+		const normalized = normalizeAuthPayload(response.data);
+
+		if (normalized.token) {
+			setAuthToken(normalized.token, payload.remember ? 30 : 7);
+		}
+
+		return normalized;
 	} catch (error) {
-		throw new Error(error?.response?.data?.message || "Unable to login right now.");
+		const message = error?.response?.data?.message || error?.message || "Unable to login right now.";
+		throw new Error(message);
 	}
+}
 
-	if (data?.token) {
-		setAuthToken(data.token);
+export async function getCurrentUser() {
+	try {
+		const response = await apiClient.get("/auth/me");
+		const data = response.data || {};
+		const currentUser = data.data?.user || data.data || data.user || null;
+
+		return {
+			success: data.success ?? true,
+			message: data.message || "Profile loaded successfully.",
+			user: currentUser,
+			data: data.data ?? currentUser,
+		};
+	} catch (error) {
+		const message = error?.response?.data?.message || error?.message || "Unable to load the current user.";
+		throw new Error(message);
 	}
-
-	return {
-		...data,
-		message: data?.message || "Logged in successfully.",
-	};
 }
 
 // Expose reusable authentication logic for other modules.

@@ -1,13 +1,7 @@
 ﻿"use client";
-
 // Purpose: This module handles products logic and UI.
- // It fetches products data and renders a table of products.
 
-  // It fetches products data and renders a table of products.
 
- console.log("ProductsList component loaded");
-
-console.log("ProductsList component loaded");
 import { useProducts } from "../hooks/useProducts";
 import { Package, Edit2, Trash2 } from "lucide-react";
 
@@ -32,7 +26,6 @@ export default function ProductsList() {
             <th className="px-4 py-3"></th>
             <th className="px-4 py-3">SKU</th>
             <th className="px-4 py-3">Name</th>
-            <th className="px-4 py-3">Category</th>
             <th className="px-4 py-3">Price</th>
             <th className="px-4 py-3">Actions</th>
           </tr>
@@ -43,7 +36,6 @@ export default function ProductsList() {
               <td className="px-4 py-3 text-slate-400"><Package className="h-4 w-4" /></td>
               <td className="px-4 py-3">{product.sku}</td>
               <td className="px-4 py-3 font-medium">{product.name}</td>
-              <td className="px-4 py-3">{product.category}</td>
               <td className="px-4 py-3 font-semibold">${product.unitPrice}</td>
               <td className="flex gap-2 px-4 py-3">
                 <button className="inline-flex items-center gap-1.5 rounded-md bg-teal-100 px-2 py-1 text-xs text-teal-700 hover:bg-teal-200" title="Edit">
