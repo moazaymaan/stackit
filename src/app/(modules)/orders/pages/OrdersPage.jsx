@@ -591,9 +591,8 @@ export default function OrdersPage() {
                       <tr key={idx} className="border-t border-blue-800/35 bg-[#0a1640]/40">
                         <td className="px-4 py-3">
                           <div className="font-semibold text-slate-100">
-                            {item.productName || "Product"}
+                            {item.productName && item.productName !== "Product" ? item.productName : `Product (${item.productId})`}
                           </div>
-                          <div className="text-xs text-slate-400">{item.productId}</div>
                         </td>
                         <td className="px-4 py-3 font-semibold">{item.quantity}</td>
                         <td className="px-4 py-3">{formatMoney(item.price)}</td>

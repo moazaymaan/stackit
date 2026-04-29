@@ -24,10 +24,21 @@ function normalizeOrderItem(item) {
     return null;
   }
 
+  // Extract product name if backend provides it in various formats
+  let productName = "";
+  if (item.product && typeof item.product === "object") {
+    productName = resolveProductName(item.product);
+  } else if (item.productName) {
+    productName = String(item.productName).trim();
+  } else if (item.product_name) {
+    productName = String(item.product_name).trim();
+  }
+
   return {
     productId: item.productId || item.product_id || "",
     quantity: Number(item.quantity ?? 0),
     price: Number(item.price ?? 0),
+    productName, // Include product name if backend provided it
   };
 }
 
@@ -84,6 +95,12 @@ function enrichOrderItems(items = [], productsMap = {}) {
       return item;
     }
 
+    // If product name already exists (from normalizeOrderItem), keep it
+    if (item.productName && item.productName.trim()) {
+      return item;
+    }
+
+    // Otherwise, try to look up from products map
     const productId = String(item.productId || "").trim();
     const product = productsMap[productId] || null;
     const productName = resolveProductName(product) || "Product";
@@ -93,6 +110,7 @@ function enrichOrderItems(items = [], productsMap = {}) {
       productName,
     };
   });
+ 
 }
 
 function buildCustomersMap(customers = []) {

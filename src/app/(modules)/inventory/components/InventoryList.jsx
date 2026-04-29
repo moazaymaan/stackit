@@ -263,9 +263,9 @@ export default function InventoryList() {
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Product</p>
                         <p className="text-lg font-bold text-slate-100">
-                          {item.productName || item.productSku || item.productId}
+                          {item.productName ? item.productName : (item.productSku ? item.productSku : `Product (${item.productId})`)}
                         </p>
-                        {item.productSku ? <p className="text-xs text-slate-400">{item.productSku}</p> : null}
+                        {item.productSku && item.productName ? <p className="text-xs text-slate-400">{item.productSku}</p> : null}
                       </div>
                     </div>
 
@@ -332,9 +332,9 @@ export default function InventoryList() {
                     <tr key={log.id} className="border-t border-blue-800/35">
                       <td className="px-4 py-3">
                         <div className="font-semibold text-slate-100">
-                          {log.productName || log.productSku || log.productId}
+                          {log.productName ? log.productName : (log.productSku ? log.productSku : `Product (${log.productId})`)}
                         </div>
-                        <div className="text-xs text-slate-400">{log.productId}</div>
+                        {log.productSku && log.productName ? <div className="text-xs text-slate-400">{log.productSku}</div> : null}
                       </td>
                       <td className="px-4 py-3">
                         <span

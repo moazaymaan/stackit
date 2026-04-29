@@ -14,11 +14,23 @@ function normalizeInventoryLog(log, productsMap = {}) {
   const id = log._id || log.id || "";
   const productId = log.productId || "";
   const product = productsMap[productId] || null;
+  
+  // Resolve product name from backend if provided, fallback to product map
+  let productName = "";
+  if (log.productName) {
+    productName = String(log.productName).trim();
+  } else if (log.product_name) {
+    productName = String(log.product_name).trim();
+  } else if (product) {
+    productName = String(product.name || product.title || product.productName || "").trim();
+  }
+  
   return {
     id,
     _id: id,
     productId,
-    productName: product ? product.name : productId,
+    productName: productName || "",
+    productSku: log.productSku || log.product_sku || product?.sku || "",
     type: String(log.type || "").toUpperCase(),
     quantity: Number(log.quantity ?? 0),
     source: String(log.source || "").toUpperCase(),
