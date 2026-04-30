@@ -124,15 +124,16 @@ export default function Navbar() {
   }
 
   const visibleNavItems = navItems.filter((item) => {
-    if (item.label !== "Users") {
-      return true;
+    // Users and Reports are only visible to ADMIN
+    if (item.label === "Users" || item.label === "Reports") {
+      if (!roleChecked) {
+        return false;
+      }
+
+      return isAdminRole(currentUserRole);
     }
 
-    if (!roleChecked) {
-      return false;
-    }
-
-    return isAdminRole(currentUserRole);
+    return true;
   });
 
   return (

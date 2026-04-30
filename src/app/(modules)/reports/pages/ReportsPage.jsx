@@ -2,9 +2,13 @@
 
 // Purpose: This module handles reports/dashboard logic and UI.
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, TrendingUp } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
+import { getCurrentUser } from "../../auth/services/authService";
+import { getAuthToken } from "../../../../lib/authCookies";
+import { isAdminRole } from "../../../../lib/userRoles";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -55,6 +59,11 @@ function normalizeMonthlyData(data = []) {
 
 // Render the main reports component.
 export default function ReportsPage() {
+  const router = useRouter();
+  const [isAccessChecked, setIsAccessChecked] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
+
+  // Call dashboard hook BEFORE any conditional returns (React rules)
   const {
     purchases,
     orders,
@@ -110,6 +119,48 @@ export default function ReportsPage() {
         : [],
     [lowStock],
   );
+
+  // Check admin access on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    const verifyAccess = async () => {
+      const token = getAuthToken();
+
+      if (!token) {
+        router.replace("/auth/pages/login");
+        return;
+      }
+
+      try {
+        const response = await getCurrentUser();
+        const currentRole = response?.user?.role || response?.data?.user?.role || response?.data?.role || "";
+
+        if (!isAdminRole(currentRole)) {
+          router.replace("/products");
+          return;
+        }
+
+        if (isMounted) {
+          setHasAccess(true);
+          setIsAccessChecked(true);
+        }
+      } catch {
+        router.replace("/auth/pages/login");
+      }
+    };
+
+    verifyAccess();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
+  // Show nothing while checking access
+  if (!isAccessChecked || !hasAccess) {
+    return null;
+  }
 
   if (isLoading) {
     return (
