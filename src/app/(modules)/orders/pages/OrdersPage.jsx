@@ -298,8 +298,7 @@ export default function OrdersPage() {
                         </span>
                       </div>
 
-                      <p className="mt-2 text-lg font-bold text-slate-100">{order.id ? `ORD-${String(order.id).slice(-6)}` : "—"}</p>
-
+          
                       <div className="mt-2.5 min-h-16 rounded-md bg-[#0c1d4a]/65 px-3 py-2 text-sm text-slate-200">
                         {order.productNames.slice(0, 2).map((name, i) => (
                           <p key={i}>{name}</p>
@@ -544,7 +543,7 @@ export default function OrdersPage() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold text-slate-100">
-                  {selectedOrder.id ? `ORD-${String(selectedOrder.id).slice(-6)}` : "Order"}
+             
                 </h2>
                 <p className="mt-1 text-sm text-slate-300">{selectedOrder.customerName}</p>
               </div>

@@ -5,10 +5,8 @@
 import { useMemo, useState } from "react";
 import {
   PlusCircle,
-  CircleDollarSign,
   Clock3,
   CheckCircle2,
-  BadgeDollarSign,
   AlertCircle,
   X,
   ChevronDown,
@@ -375,22 +373,7 @@ export default function PurchasesPage() {
     });
   }, [purchases]);
 
-  // Compute derived purchases data from current state.
-  const totalPurchasesThisMonth = useMemo(() => {
-    const now = new Date();
-    const targetMonth = now.getMonth();
-    const targetYear = now.getFullYear();
-
-    return purchaseCards.reduce((sum, purchase) => {
-      const purchaseDate = new Date(purchase.createdAt);
-      const isSameMonth =
-        !Number.isNaN(purchaseDate.getTime()) &&
-        purchaseDate.getMonth() === targetMonth &&
-        purchaseDate.getFullYear() === targetYear;
-
-      return isSameMonth ? sum + purchase.totalAmount : sum;
-    }, 0);
-  }, [purchaseCards]);
+  
 
   // Compute derived purchases data from current state.
   const pendingOrders = useMemo(() => {
@@ -402,10 +385,7 @@ export default function PurchasesPage() {
     return purchaseCards.filter((purchase) => purchase.status === "RECEIVED").length;
   }, [purchaseCards]);
 
-  // Compute derived purchases data from current state.
-  const totalSpend = useMemo(() => {
-    return purchaseCards.reduce((sum, purchase) => sum + purchase.totalAmount, 0);
-  }, [purchaseCards]);
+  
 
   // Compute derived purchases data from current state.
   const boardData = useMemo(() => {
@@ -500,17 +480,7 @@ export default function PurchasesPage() {
 
         {!isLoading && !error ? (
           <>
-            <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#3f4d8a]/75 to-[#2d3f7a]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
-                <div className="flex items-center gap-2">
-                  <CircleDollarSign className="h-4 w-4 text-cyan-200" />
-                  <p className="text-sm font-semibold text-slate-200">Total Purchases This Month</p>
-                </div>
-                <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">
-                  {formatMoney(totalPurchasesThisMonth)}
-                </p>
-              </article>
-
+            <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-2">
               <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#8e5a2f]/75 to-[#3a3b62]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
                 <div className="flex items-center gap-2">
                   <Clock3 className="h-4 w-4 text-amber-200" />
@@ -527,13 +497,6 @@ export default function PurchasesPage() {
                 <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{receivedOrders}</p>
               </article>
 
-              <article className="rounded-md border border-blue-700/30 bg-linear-to-r from-[#6f7f32]/75 to-[#2f4a6f]/65 px-3 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.26)]">
-                <div className="flex items-center gap-2">
-                  <BadgeDollarSign className="h-4 w-4 text-lime-200" />
-                  <p className="text-sm font-semibold text-slate-200">Total Spend</p>
-                </div>
-                <p className="mt-1 pl-6 text-3xl font-extrabold leading-none text-white">{formatMoney(totalSpend)}</p>
-              </article>
             </div>
 
             <div className="border-y border-blue-800/35 py-2">

@@ -24,7 +24,7 @@ function formatMovementSource(source) {
 export default function InventoryList() {
   // Read inventory data and actions from a custom hook.
   const { balances, logs, isLoading, error, refresh } = useInventory();
-  const [activeTab, setActiveTab] = useState("balances");
+  const [activeTab, setActiveTab] = useState("logs");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -142,7 +142,7 @@ export default function InventoryList() {
         <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-blue-800/45 bg-[#091b46]/60 p-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Inventory</h1>
-            <p className="mt-1 text-sm text-slate-300">Backend inventory logs + computed balances</p>
+          
           </div>
 
           <div className="flex flex-wrap gap-3">
@@ -333,7 +333,6 @@ export default function InventoryList() {
                     <th className="px-4 py-3">Type</th>
                     <th className="px-4 py-3">Qty</th>
                     <th className="px-4 py-3">Source</th>
-                    <th className="px-4 py-3">Reference</th>
                     <th className="px-4 py-3">Created</th>
                   </tr>
                 </thead>
@@ -359,7 +358,6 @@ export default function InventoryList() {
                       </td>
                       <td className="px-4 py-3 font-bold">{log.quantity}</td>
                       <td className="px-4 py-3">{log.source || "—"}</td>
-                      <td className="px-4 py-3">{formatMovementSource(log.source)}</td>
                       <td className="px-4 py-3">
                         {log.createdAt ? new Date(log.createdAt).toLocaleString() : "—"}
                       </td>

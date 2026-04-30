@@ -5,6 +5,7 @@
 import { useMemo, useState } from "react";
 import { Edit2, Eye, Trash2 } from "lucide-react";
 import { useSuppliers } from "../hooks/useSuppliers";
+import { usePurchases } from "../../purchases/hooks/usePurchases";
 
 const EMPTY_SUPPLIER_FORM = {
   name: "",
@@ -12,63 +13,35 @@ const EMPTY_SUPPLIER_FORM = {
   address: "",
 };
 
-const purchaseHistoryBySupplierId = {
-  "sup-001": [
-    {
-      id: "po-1023",
-      date: "2023-11-15",
-      poNumber: "PO-1023",
-      quantity: "150 units",
-      amount: "$3,200.00",
-    },
-    {
-      id: "po-0984",
-      date: "2023-09-28",
-      poNumber: "PO-0984",
-      quantity: "300 units",
-      amount: "$7,500.00",
-    },
-    {
-      id: "po-0871",
-      date: "2023-07-12",
-      poNumber: "PO-0871",
-      quantity: "200 units",
-      amount: "$4,800.00",
-    },
-  ],
-  "sup-002": [
-    {
-      id: "po-1091",
-      date: "2023-12-05",
-      poNumber: "PO-1091",
-      quantity: "95 units",
-      amount: "$2,140.00",
-    },
-    {
-      id: "po-1062",
-      date: "2023-10-11",
-      poNumber: "PO-1062",
-      quantity: "160 units",
-      amount: "$3,920.00",
-    },
-  ],
-  "sup-003": [
-    {
-      id: "po-1110",
-      date: "2023-12-20",
-      poNumber: "PO-1110",
-      quantity: "110 units",
-      amount: "$3,300.00",
-    },
-    {
-      id: "po-1045",
-      date: "2023-08-09",
-      poNumber: "PO-1045",
-      quantity: "250 units",
-      amount: "$6,840.00",
-    },
-  ],
-};
+function formatPurchaseAmount(value) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+}
+
+function formatPurchaseQuantity(items = []) {
+  const totalQuantity = Array.isArray(items)
+    ? items.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0)
+    : 0;
+
+  return `${totalQuantity} units`;
+}
+
+function getSupplierStatus(purchases = []) {
+  if (!Array.isArray(purchases) || purchases.length === 0) {
+    return "Received";
+  }
+
+  const latestPurchase = [...purchases].sort((left, right) => {
+    const leftTime = new Date(left.createdAt || 0).getTime();
+    const rightTime = new Date(right.createdAt || 0).getTime();
+    return rightTime - leftTime;
+  })[0];
+
+  return String(latestPurchase?.status || "RECEIVED").toUpperCase() === "PENDING" ? "Pending" : "Received";
+}
 
 // Render the main suppliers component.
 export default function SuppliersPage() {
@@ -88,6 +61,7 @@ export default function SuppliersPage() {
     deleteSupplier,
     getSupplierById,
   } = useSuppliers();
+  const { purchases, isLoading: isPurchasesLoading, error: purchasesError } = usePurchases();
   const [expandedSupplierId, setExpandedSupplierId] = useState("");
   const [actionError, setActionError] = useState("");
   const [modalType, setModalType] = useState("");
@@ -98,13 +72,21 @@ export default function SuppliersPage() {
   // Compute derived suppliers data from current state.
   const suppliersWithUiData = useMemo(() => {
     return suppliers.map((supplier) => {
+      const supplierPurchases = purchases.filter((purchase) => purchase.supplierId === supplier.id);
+
       return {
         ...supplier,
-        status: supplier.status || "Active",
-        purchaseHistory: purchaseHistoryBySupplierId[supplier.id] || [],
+        status: getSupplierStatus(supplierPurchases),
+        purchaseHistory: supplierPurchases.map((purchase) => ({
+            id: purchase.id,
+            date: purchase.createdAt,
+            status: String(purchase.status || "RECEIVED").toUpperCase() === "PENDING" ? "Pending" : "Received",
+            quantity: formatPurchaseQuantity(purchase.items),
+            amount: formatPurchaseAmount(purchase.totalAmount),
+          })),
       };
     });
-  }, [suppliers]);
+  }, [suppliers, purchases]);
 
   const expandedSupplier = suppliersWithUiData.find((supplier) => supplier.id === expandedSupplierId) || null;
 
@@ -285,7 +267,7 @@ export default function SuppliersPage() {
 
         {!isLoading && error && !actionError ? <p className="text-sm text-rose-300">{error}</p> : null}
 
-        {!isLoading && !error ? (
+        {!isLoading && !error && !isPurchasesLoading ? (
           <div className="space-y-3">
             {suppliersWithUiData.map((supplier) => {
               const isExpanded = expandedSupplierId === supplier.id;
@@ -311,9 +293,9 @@ export default function SuppliersPage() {
                     <div>
                       <span
                         className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
-                          supplier.status === "Active"
-                            ? "bg-emerald-500 text-emerald-50"
-                            : "bg-rose-500 text-rose-50"
+                          supplier.status === "Pending"
+                            ? "bg-amber-500 text-amber-50"
+                            : "bg-emerald-500 text-emerald-50"
                         }`}
                       >
                         {supplier.status}
@@ -381,7 +363,6 @@ export default function SuppliersPage() {
                           <thead className="text-sm font-semibold text-slate-300">
                             <tr>
                               <th className="px-3 py-2">Date</th>
-                              <th className="px-3 py-2">PO Number</th>
                               <th className="px-3 py-2">Quantity</th>
                               <th className="px-3 py-2">Amount</th>
                             </tr>
@@ -389,8 +370,9 @@ export default function SuppliersPage() {
                           <tbody>
                             {supplier.purchaseHistory.map((purchase) => (
                               <tr key={purchase.id} className="border-t border-blue-800/35">
-                                <td className="px-3 py-2">{purchase.date}</td>
-                                <td className="px-3 py-2 font-medium">{purchase.poNumber}</td>
+                                <td className="px-3 py-2">
+                                  {purchase.date ? new Date(purchase.date).toLocaleDateString() : "-"}
+                                </td>
                                 <td className="px-3 py-2">{purchase.quantity}</td>
                                 <td className="px-3 py-2">{purchase.amount}</td>
                               </tr>
@@ -404,6 +386,10 @@ export default function SuppliersPage() {
               );
             })}
           </div>
+        ) : null}
+
+        {!isLoading && !error && purchasesError ? (
+          <p className="mt-3 text-sm text-rose-300">{purchasesError}</p>
         ) : null}
       </div>
 
