@@ -170,3 +170,4 @@ export async function getFinanceSummary(role = getCurrentUserRoleFromToken()) {
     throw new Error(message);
   }
 }
+

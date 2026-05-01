@@ -29,6 +29,44 @@ function formatPurchaseQuantity(items = []) {
   return `${totalQuantity} units`;
 }
 
+function buildProductMap(products = []) {
+  return products.reduce((map, product) => {
+    if (!product || typeof product !== "object") {
+      return map;
+    }
+
+    const keys = [product.id, product._id]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean);
+
+    for (const key of keys) {
+      map.set(key, product);
+    }
+
+    return map;
+  }, new Map());
+}
+
+function formatPurchaseProductNames(items = [], productById = new Map()) {
+  const names = Array.isArray(items)
+    ? items.map((item) => {
+        const productId = String(item?.productId || item?.product || "").trim();
+        const product = productById.get(productId);
+
+        return (
+          product?.name ||
+          product?.title ||
+          item?.productName ||
+          item?.name ||
+          productId ||
+          "Product"
+        );
+      })
+    : [];
+
+  return [...new Set(names.filter(Boolean))];
+}
+
 function getSupplierStatus(purchases = []) {
   if (!Array.isArray(purchases) || purchases.length === 0) {
     return "Received";
@@ -61,13 +99,15 @@ export default function SuppliersPage() {
     deleteSupplier,
     getSupplierById,
   } = useSuppliers();
-  const { purchases, isLoading: isPurchasesLoading, error: purchasesError } = usePurchases();
+  const { purchases, products, isLoading: isPurchasesLoading, error: purchasesError } = usePurchases();
   const [expandedSupplierId, setExpandedSupplierId] = useState("");
   const [actionError, setActionError] = useState("");
   const [modalType, setModalType] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [formValues, setFormValues] = useState(EMPTY_SUPPLIER_FORM);
   const [formError, setFormError] = useState("");
+
+  const productById = useMemo(() => buildProductMap(products), [products]);
 
   // Compute derived suppliers data from current state.
   const suppliersWithUiData = useMemo(() => {
@@ -80,13 +120,14 @@ export default function SuppliersPage() {
         purchaseHistory: supplierPurchases.map((purchase) => ({
             id: purchase.id,
             date: purchase.createdAt,
+            productNames: formatPurchaseProductNames(purchase.items, productById),
             status: String(purchase.status || "RECEIVED").toUpperCase() === "PENDING" ? "Pending" : "Received",
             quantity: formatPurchaseQuantity(purchase.items),
             amount: formatPurchaseAmount(purchase.totalAmount),
           })),
       };
     });
-  }, [suppliers, purchases]);
+  }, [productById, purchases, suppliers]);
 
   const expandedSupplier = suppliersWithUiData.find((supplier) => supplier.id === expandedSupplierId) || null;
 
@@ -363,6 +404,7 @@ export default function SuppliersPage() {
                           <thead className="text-sm font-semibold text-slate-300">
                             <tr>
                               <th className="px-3 py-2">Date</th>
+                              <th className="px-3 py-2">Product Name</th>
                               <th className="px-3 py-2">Quantity</th>
                               <th className="px-3 py-2">Amount</th>
                             </tr>
@@ -372,6 +414,10 @@ export default function SuppliersPage() {
                               <tr key={purchase.id} className="border-t border-blue-800/35">
                                 <td className="px-3 py-2">
                                   {purchase.date ? new Date(purchase.date).toLocaleDateString() : "-"}
+                                </td>
+                                <td className="px-3 py-2">
+                                  {purchase.productNames.slice(0, 2).join(", ") || "-"}
+                                  {purchase.productNames.length > 2 ? ` +${purchase.productNames.length - 2} more` : ""}
                                 </td>
                                 <td className="px-3 py-2">{purchase.quantity}</td>
                                 <td className="px-3 py-2">{purchase.amount}</td>
