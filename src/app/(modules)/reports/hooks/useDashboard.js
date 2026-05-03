@@ -52,6 +52,16 @@ export function useDashboard() {
         getFinanceSummary(normalizedRole),
       ]);
 
+      try {
+        console.debug("[useDashboard] loaded dashboard data", {
+          purchasesData,
+          ordersData,
+          productsData,
+          stockData,
+          financeData,
+        });
+      } catch (e) {}
+
       setPurchases(Array.isArray(purchasesData) ? purchasesData : []);
       setOrders(Array.isArray(ordersData) ? ordersData : []);
       setTopProducts(Array.isArray(productsData) ? productsData : []);

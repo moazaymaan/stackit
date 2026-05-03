@@ -61,20 +61,25 @@ function normalizeErrorMessage(error, fallbackMessage = "An error occurred") {
   return String(message);
 }
 
-// Helper: Extract data from response
-function extractData(response) {
-  const data = response?.data;
+// Helper: Extract data from either an axios response or a raw payload
+function extractData(responseOrData) {
+  // Accept either the full axios response object or the raw response body.
+  let payload = responseOrData;
 
-  if (Array.isArray(data)) {
-    return data;
+  if (payload && typeof payload === "object" && Object.prototype.hasOwnProperty.call(payload, "data")) {
+    payload = payload.data;
   }
 
-  if (Array.isArray(data?.data)) {
-    return data.data;
+  if (Array.isArray(payload)) {
+    return payload;
   }
 
-  if (typeof data === "object" && !Array.isArray(data)) {
-    return data;
+  if (Array.isArray(payload?.data)) {
+    return payload.data;
+  }
+
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    return payload;
   }
 
   return [];
@@ -92,7 +97,10 @@ export async function getMonthlyPurchases(year = new Date().getFullYear(), role 
     const response = await apiClient.get("/dashboard/purchases/monthly", {
       params: { year },
     });
-    return extractData(response.data) || [];
+    try {
+      console.debug("[dashboardService] getMonthlyPurchases response:", response);
+    } catch {}
+    return extractData(response) || [];
   } catch (error) {
     const message = normalizeErrorMessage(error, "Failed to load monthly purchases.");
     throw new Error(message);
@@ -111,7 +119,10 @@ export async function getMonthlyOrders(year = new Date().getFullYear(), role = g
     const response = await apiClient.get("/dashboard/orders/monthly", {
       params: { year },
     });
-    return extractData(response.data) || [];
+    try {
+      console.debug("[dashboardService] getMonthlyOrders response:", response);
+    } catch {}
+    return extractData(response) || [];
   } catch (error) {
     const message = normalizeErrorMessage(error, "Failed to load monthly orders.");
     throw new Error(message);
@@ -127,7 +138,10 @@ export async function getTopProducts(role = getCurrentUserRoleFromToken()) {
 
   try {
     const response = await apiClient.get("/dashboard/top-products");
-    return extractData(response.data) || [];
+    try {
+      console.debug("[dashboardService] getTopProducts response:", response);
+    } catch {}
+    return extractData(response) || [];
   } catch (error) {
     const message = normalizeErrorMessage(error, "Failed to load top products.");
     throw new Error(message);
@@ -143,7 +157,10 @@ export async function getLowStockProducts(role = getCurrentUserRoleFromToken()) 
 
   try {
     const response = await apiClient.get("/dashboard/low-stock");
-    return extractData(response.data) || [];
+    try {
+      console.debug("[dashboardService] getLowStockProducts response:", response);
+    } catch {}
+    return extractData(response) || [];
   } catch (error) {
     const message = normalizeErrorMessage(error, "Failed to load low stock products.");
     throw new Error(message);
@@ -159,11 +176,16 @@ export async function getFinanceSummary(role = getCurrentUserRoleFromToken()) {
 
   try {
     const response = await apiClient.get("/dashboard/finance/summary");
+    try {
+      console.debug("[dashboardService] getFinanceSummary response:", response);
+    } catch {}
     const data = response?.data?.data || response?.data;
+    const financeSource = data?.monthly ? data : data?.data || data;
+
     return {
-      totalSpend: Number(data?.totalSpend ?? 0),
-      revenue: Number(data?.revenue ?? 0),
-      profit: Number(data?.profit ?? 0),
+      totalSpend: Number(financeSource?.totalSpend ?? financeSource?.totalSpent ?? 0),
+      revenue: Number(financeSource?.revenue ?? financeSource?.totalRevenue ?? 0),
+      profit: Number(financeSource?.profit ?? financeSource?.netProfit ?? 0),
     };
   } catch (error) {
     const message = normalizeErrorMessage(error, "Failed to load finance summary.");

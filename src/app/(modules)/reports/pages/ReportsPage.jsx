@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { AlertCircle, TrendingUp } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
 import { getCurrentUser } from "../../auth/services/authService";
@@ -11,6 +12,10 @@ import { getAuthToken } from "../../../../lib/authCookies";
 import { isAdminRole } from "../../../../lib/userRoles";
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthIndexByLabel = months.reduce((accumulator, month, index) => {
+  accumulator[month.toLowerCase()] = index;
+  return accumulator;
+}, {});
 
 // Format currency for display
 function formatCurrency(value) {
@@ -47,7 +52,12 @@ function normalizeMonthlyData(data = []) {
 
   if (Array.isArray(data)) {
     data.forEach((item) => {
-      const monthIndex = item.month ? parseInt(item.month, 10) - 1 : -1;
+      const monthValue = String(item?.month || "").trim();
+      const numericMonth = Number.parseInt(monthValue, 10);
+      const monthIndex = Number.isFinite(numericMonth)
+        ? numericMonth - 1
+        : monthIndexByLabel[monthValue.toLowerCase()];
+
       if (monthIndex >= 0 && monthIndex < 12) {
         normalized[monthIndex] = Number(item.total || 0);
       }
@@ -60,6 +70,7 @@ function normalizeMonthlyData(data = []) {
 // Render the main reports component.
 export default function ReportsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isAccessChecked, setIsAccessChecked] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
 
@@ -161,6 +172,8 @@ export default function ReportsPage() {
   if (!isAccessChecked || !hasAccess) {
     return null;
   }
+
+  const debugMode = searchParams?.get?.("debug") === "1";
 
   if (isLoading) {
     return (
@@ -408,6 +421,16 @@ export default function ReportsPage() {
           </article>
         ) : null}
       </div>
+
+      {/* Debug panel (enable with ?debug=1) */}
+      {debugMode ? (
+        <div className="mx-auto mt-6 max-w-6xl rounded-lg border border-yellow-600/30 bg-yellow-900/10 p-4 text-sm text-yellow-100">
+          <h3 className="mb-2 font-medium">Debug: Raw dashboard payloads</h3>
+          <pre className="max-h-64 overflow-auto whitespace-pre-wrap text-xs">
+            {JSON.stringify({ purchases, orders, topProducts, lowStock, finance }, null, 2)}
+          </pre>
+        </div>
+      ) : null}
     </section>
   );
 }
