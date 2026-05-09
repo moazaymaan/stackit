@@ -2,9 +2,13 @@
 
 // Purpose: This module handles orders logic and UI.
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { CheckCheck, Eye, Plus, RefreshCw, ShoppingCart, X } from "lucide-react";
 import { useOrders } from "../hooks/useOrders";
+import { getCurrentUser } from "../../auth/services/authService";
+import { getAuthToken } from "../../../../lib/authCookies";
+import { normalizeUserRole } from "../../../../lib/userRoles";
+import { useRouter } from "next/navigation";
 import { useProducts } from "../../products/hooks/useProducts";
 
 const statusOptions = ["All Status", "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED"];
@@ -59,6 +63,40 @@ function formatMoney(value) {
 
 // Render the main orders component.
 export default function OrdersPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const verifyAccess = async () => {
+      const token = getAuthToken();
+
+      if (!token) {
+        router.replace("/auth/pages/login");
+        return;
+      }
+
+      try {
+        const response = await getCurrentUser();
+        const currentRole = response?.user?.role || response?.data?.user?.role || response?.data?.role || "";
+
+        if (normalizeUserRole(currentRole) === "WAREHOUSE") {
+          router.replace("/products");
+          return;
+        }
+      } catch {
+        router.replace("/auth/pages/login");
+        return;
+      }
+    };
+
+    verifyAccess();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
   // Read orders data and actions from a custom hook.
   const {
     orders,

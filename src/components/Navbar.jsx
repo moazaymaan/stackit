@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { getCurrentUser, logout } from "../app/(modules)/auth/services/authService";
 import { Package, Boxes, Truck, ShoppingCart, ClipboardList, Users, BarChart3, LogOut } from "lucide-react";
 import { getAuthToken } from "../lib/authCookies";
-import { isAdminRole } from "../lib/userRoles";
+import { isAdminRole, normalizeUserRole } from "../lib/userRoles";
 
 const navItems = [
   { label: "Products", href: "/products", icon: Package },
@@ -131,6 +131,13 @@ export default function Navbar() {
       }
 
       return isAdminRole(currentUserRole);
+    }
+
+    // Hide Orders for Warehouse role
+    if (item.label === "Orders") {
+      if (!roleChecked) return false;
+      const normalized = normalizeUserRole(currentUserRole);
+      return normalized !== "WAREHOUSE";
     }
 
     return true;
