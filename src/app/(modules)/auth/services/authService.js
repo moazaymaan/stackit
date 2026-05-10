@@ -6,8 +6,13 @@ import { clearAuthToken, setAuthToken } from "../../../../lib/authCookies";
 function normalizeAuthPayload(payload) {
 	const data = payload?.data || payload || {};
 	const authData = data?.data || {};
-	const token = authData.token || data.token || "";
-	const user = authData.user || data.user || null;
+	const token =
+		authData.token ||
+		authData.accessToken ||
+		data.token ||
+		data.accessToken ||
+		"";
+	const user = authData.user || data.user || authData.account || data.account || null;
 
 	return {
 		success: data.success ?? Boolean(token),
@@ -28,7 +33,10 @@ export async function login(payload) {
 		const normalized = normalizeAuthPayload(response.data);
 
 		if (normalized.token) {
+			clearAuthToken();
 			setAuthToken(normalized.token, payload.remember ? 30 : 7);
+		} else {
+			clearAuthToken();
 		}
 
 		return normalized;

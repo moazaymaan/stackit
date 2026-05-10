@@ -5,7 +5,8 @@ import { getAuthToken } from "../../../../lib/authCookies";
 import { normalizeUserRole } from "../../../../lib/userRoles";
 
 const READ_ROLES = ["ADMIN", "ACCOUNTANT", "WAREHOUSE"];
-const CREATE_UPDATE_ROLES = ["ADMIN", "ACCOUNTANT"];
+const CREATE_ROLES = ["ADMIN", "ACCOUNTANT"];
+const UPDATE_STATUS_ROLES = ["ADMIN", "ACCOUNTANT", "WAREHOUSE"];
 
 // Helper: Decode JWT payload to extract role
 function decodeJwtPayload(token) {
@@ -231,7 +232,7 @@ export async function getPurchasesBySupplier(supplierId, role = getCurrentUserRo
 }
 
 export async function createPurchase(payload, role = getCurrentUserRoleFromToken()) {
-  assertAllowedRole(role, CREATE_UPDATE_ROLES);
+  assertAllowedRole(role, CREATE_ROLES);
 
   try {
     const { getSuppliers } = await import("../../suppliers/services/suppliersService");
@@ -252,7 +253,7 @@ export async function createPurchase(payload, role = getCurrentUserRoleFromToken
 }
 
 export async function updatePurchaseStatus(purchaseId, status, role = getCurrentUserRoleFromToken()) {
-  assertAllowedRole(role, CREATE_UPDATE_ROLES);
+  assertAllowedRole(role, UPDATE_STATUS_ROLES);
 
   try {
     const { getSuppliers } = await import("../../suppliers/services/suppliersService");

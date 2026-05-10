@@ -16,7 +16,8 @@ import { getSuppliers } from "../../suppliers/services/suppliersService";
 import { getProducts } from "../../products/services/productsService";
 
 const READ_ROLES = ["ADMIN", "ACCOUNTANT", "WAREHOUSE"];
-const CREATE_UPDATE_ROLES = ["ADMIN", "ACCOUNTANT"];
+const CREATE_ROLES = ["ADMIN", "ACCOUNTANT"];
+const UPDATE_STATUS_ROLES = ["ADMIN", "ACCOUNTANT", "WAREHOUSE"];
 
 // Expose reusable purchases logic for other modules.
 export function usePurchases() {
@@ -32,7 +33,8 @@ export function usePurchases() {
   // Compute role-based permissions
   const normalizedRole = normalizeUserRole(currentUserRole);
   const canRead = READ_ROLES.includes(normalizedRole);
-  const canCreate = CREATE_UPDATE_ROLES.includes(normalizedRole);
+  const canCreate = CREATE_ROLES.includes(normalizedRole);
+  const canUpdateStatus = UPDATE_STATUS_ROLES.includes(normalizedRole);
 
   const loadPurchases = useCallback(async () => {
     if (!canRead) {
@@ -86,7 +88,7 @@ export function usePurchases() {
 
   const updateStatusHandler = useCallback(
     async (purchaseId, status) => {
-      if (!canCreate) {
+      if (!canUpdateStatus) {
         throw new Error("You do not have permission to update purchases.");
       }
 
@@ -109,7 +111,7 @@ export function usePurchases() {
         setIsSubmitting(false);
       }
     },
-    [canCreate, normalizedRole],
+    [canUpdateStatus, normalizedRole],
   );
 
   const getByIdHandler = useCallback(
@@ -171,6 +173,7 @@ export function usePurchases() {
     currentUserRole,
     canRead,
     canCreate,
+    canUpdateStatus,
     clearMessages,
     refresh: loadPurchases,
     create: createPurchaseHandler,
