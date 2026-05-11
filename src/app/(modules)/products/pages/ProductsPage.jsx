@@ -400,11 +400,9 @@ export default function ProductsPage() {
           ) : null}
         </div>
 
-        {!canSeeProductActionIcons ? (
+        {!canSeeProductActionIcons && !isAccountantRole ? (
           <div className="mb-4 rounded-xl border border-amber-600/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-            {isAccountantRole
-              ? "Accountant mode: you can view products only."
-              : "Read-only mode: only Admin and Warehouse can create, edit, or delete products."}
+            {"Read-only mode: only Admin and Warehouse can create, edit, or delete products."}
           </div>
         ) : null}
 
