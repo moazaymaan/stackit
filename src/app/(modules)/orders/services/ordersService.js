@@ -191,6 +191,25 @@ function normalizeMutationResponse(payload, fallbackMessage) {
   };
 }
 
+// Only fetch the full users list when the current user has permission (avoid 403 for restricted roles)
+async function fetchUsersIfAllowed() {
+  try {
+    const { getCurrentUser } = await import("../../auth/services/authService");
+    const current = await getCurrentUser().catch(() => null);
+    const role = (current?.user?.role || "").toUpperCase();
+
+    // Only ADMIN should trigger fetching the full users list by default
+    if (role === "ADMIN") {
+      const { getUsers } = await import("../../users/services/userService");
+      return await getUsers().catch(() => []);
+    }
+  } catch (err) {
+    // ignore and return empty
+  }
+
+  return [];
+}
+
 export async function getOrders() {
   try {
     const response = await apiClient.get("/orders");
@@ -201,12 +220,11 @@ export async function getOrders() {
     }
 
     // Fetch customers and products for mapping
-    const { getUsers } = await import("../../users/services/userService");
     const { getProducts } = await import("../../products/services/productsService");
     let customers = [];
     let products = [];
     try {
-      customers = await getUsers().catch(() => []);
+      customers = await fetchUsersIfAllowed();
     } catch {
       customers = [];
     }
@@ -236,12 +254,11 @@ export async function getOrderById(orderId) {
     }
 
     // Fetch customers and products for mapping
-    const { getUsers } = await import("../../users/services/userService");
     const { getProducts } = await import("../../products/services/productsService");
     let customers = [];
     let products = [];
     try {
-      customers = await getUsers().catch(() => []);
+      customers = await fetchUsersIfAllowed();
     } catch {
       customers = [];
     }
@@ -269,12 +286,11 @@ export async function createOrder(payload) {
     }
 
     // Fetch customers and products for mapping to enrich response
-    const { getUsers } = await import("../../users/services/userService");
     const { getProducts } = await import("../../products/services/productsService");
     let customers = [];
     let products = [];
     try {
-      customers = await getUsers().catch(() => []);
+      customers = await fetchUsersIfAllowed();
     } catch {
       customers = [];
     }
@@ -306,12 +322,11 @@ export async function confirmOrder(orderId) {
     }
 
     // Fetch customers and products for mapping to enrich response
-    const { getUsers } = await import("../../users/services/userService");
     const { getProducts } = await import("../../products/services/productsService");
     let customers = [];
     let products = [];
     try {
-      customers = await getUsers().catch(() => []);
+      customers = await fetchUsersIfAllowed();
     } catch {
       customers = [];
     }
