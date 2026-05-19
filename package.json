@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && npx open-cli http://localhost:3000\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -24,6 +24,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.0.1",
+    "open-cli": "^8.0.0"
   }
 }

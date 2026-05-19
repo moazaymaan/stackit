@@ -1,9 +1,6 @@
 ﻿"use client";
 
 // Purpose: This module handles authentication logic and UI.
-console.log("useLogin hook loaded");
-console.log("useLogin hook loaded");
-console.log("useLogin hook loaded");
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -46,8 +43,6 @@ export function useLogin() {
 
 		if (!form.password) {
 			nextErrors.password = "Password is required.";
-		} else if (form.password.length < 6) {
-			nextErrors.password = "Password must be at least 6 characters.";
 		}
 
 		setErrors(nextErrors);

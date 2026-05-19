@@ -9,6 +9,7 @@ export function setAuthToken(token, days = 7) {
   Cookies.set(AUTH_TOKEN_COOKIE, token, {
     expires: days,
     sameSite: "strict",
+    path: "/",
   });
 }
 
@@ -19,6 +20,6 @@ export function getAuthToken() {
 
 // Expose reusable shared utilities logic for other modules.
 export function clearAuthToken() {
-  Cookies.remove(AUTH_TOKEN_COOKIE);
+  Cookies.remove(AUTH_TOKEN_COOKIE, { path: "/" });
 }
 
